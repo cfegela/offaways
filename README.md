@@ -1,6 +1,6 @@
 # Offaways — Filing Management Portal
 
-Serverless filing management portal built with Lambda (Node 20), Aurora Serverless v2 PostgreSQL, Cognito auth, and a vanilla-JS frontend on CloudFront/S3. Currently supports SEC Form N-PX (annual proxy voting record).
+A form filing & management portal built using the Serverless Framework with Lambda (Node 20), Aurora Serverless v2 PostgreSQL, Cognito auth, and a vanilla-JS frontend on CloudFront/S3. Currently supports SEC Form N-PX (annual proxy voting record).
 
 ---
 
