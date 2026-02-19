@@ -6,7 +6,7 @@ on:
 
 jobs:
   test:
-    name: Run tests
+    name: Tests
     runs-on: ubuntu-latest
 
     steps:
@@ -27,7 +27,7 @@ jobs:
         working-directory: backend
 
   semgrep:
-    name: Semgrep SAST
+    name: Semgrep Scan
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +46,7 @@ jobs:
             backend/src backend/scripts frontend/js
 
   trivy:
-    name: Trivy dependency + IaC scan
+    name: Trivy Scan
     runs-on: ubuntu-latest
 
     steps:

@@ -1,0 +1,4772 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "ServerlessDeploymentBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ServerlessDeploymentBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "ServerlessDeploymentBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:*",
+              "Effect": "Deny",
+              "Principal": "*",
+              "Resource": [
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      },
+                      "/*"
+                    ]
+                  ]
+                },
+                {
+                  "Fn::Join": [
+                    "",
+                    [
+                      "arn:",
+                      {
+                        "Ref": "AWS::Partition"
+                      },
+                      ":s3:::",
+                      {
+                        "Ref": "ServerlessDeploymentBucket"
+                      }
+                    ]
+                  ]
+                }
+              ],
+              "Condition": {
+                "Bool": {
+                  "aws:SecureTransport": false
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "SetupDbLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-setupDb"
+      }
+    },
+    "CognitoConfigLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-cognitoConfig"
+      }
+    },
+    "ListFilingsLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-listFilings"
+      }
+    },
+    "CreateFilingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-createFiling"
+      }
+    },
+    "GetFilingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-getFiling"
+      }
+    },
+    "UpdateFilingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-updateFiling"
+      }
+    },
+    "DeleteFilingLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-deleteFiling"
+      }
+    },
+    "SetFilingStatusLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-setFilingStatus"
+      }
+    },
+    "ListSeriesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-listSeries"
+      }
+    },
+    "CreateSeriesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-createSeries"
+      }
+    },
+    "UpdateSeriesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-updateSeries"
+      }
+    },
+    "DeleteSeriesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-deleteSeries"
+      }
+    },
+    "ListVotesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-listVotes"
+      }
+    },
+    "CreateVoteLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-createVote"
+      }
+    },
+    "UpdateVoteLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-updateVote"
+      }
+    },
+    "DeleteVoteLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-deleteVote"
+      }
+    },
+    "ImportVotesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-importVotes"
+      }
+    },
+    "ClearVotesLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-clearVotes"
+      }
+    },
+    "AdminCreateUserLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-adminCreateUser"
+      }
+    },
+    "AdminListUsersLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-adminListUsers"
+      }
+    },
+    "AdminDeleteUserLogGroup": {
+      "Type": "AWS::Logs::LogGroup",
+      "Properties": {
+        "LogGroupName": "/aws/lambda/offaways-dev-adminDeleteUser"
+      }
+    },
+    "IamRoleLambdaExecution": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "PolicyName": {
+              "Fn::Join": [
+                "-",
+                [
+                  "offaways",
+                  "dev",
+                  "lambda"
+                ]
+              ]
+            },
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogStream",
+                    "logs:CreateLogGroup",
+                    "logs:TagResource"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/offaways-dev*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": [
+                    {
+                      "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/offaways-dev*:*:*"
+                    }
+                  ]
+                },
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "cognito-idp:AdminGetUser",
+                    "cognito-idp:AdminCreateUser",
+                    "cognito-idp:AdminDeleteUser",
+                    "cognito-idp:AdminSetUserPassword",
+                    "cognito-idp:AdminDisableUser",
+                    "cognito-idp:AdminEnableUser",
+                    "cognito-idp:ListUsers",
+                    "cognito-idp:AdminAddUserToGroup",
+                    "cognito-idp:AdminRemoveUserFromGroup"
+                  ],
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "CognitoUserPool",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ],
+        "Path": "/",
+        "RoleName": {
+          "Fn::Join": [
+            "-",
+            [
+              "offaways",
+              "dev",
+              {
+                "Ref": "AWS::Region"
+              },
+              "lambdaRole"
+            ]
+          ]
+        },
+        "ManagedPolicyArns": [
+          {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+              ]
+            ]
+          }
+        ]
+      }
+    },
+    "SetupDbLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/setup.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-setupDb",
+        "MemorySize": 512,
+        "Timeout": 60,
+        "Description": "Run schema.sql against Aurora. Invoke once after first deploy.",
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "SetupDbLogGroup"
+      ]
+    },
+    "CognitoConfigLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/cognito-config.handler",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-cognitoConfig",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CognitoConfigLogGroup"
+      ]
+    },
+    "ListFilingsLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/filings.list",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-listFilings",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ListFilingsLogGroup"
+      ]
+    },
+    "CreateFilingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/filings.create",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-createFiling",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateFilingLogGroup"
+      ]
+    },
+    "GetFilingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/filings.get",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-getFiling",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "GetFilingLogGroup"
+      ]
+    },
+    "UpdateFilingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/filings.update",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-updateFiling",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "UpdateFilingLogGroup"
+      ]
+    },
+    "DeleteFilingLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/filings.remove",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-deleteFiling",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DeleteFilingLogGroup"
+      ]
+    },
+    "SetFilingStatusLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/filings.setStatus",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-setFilingStatus",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "SetFilingStatusLogGroup"
+      ]
+    },
+    "ListSeriesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/series.list",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-listSeries",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ListSeriesLogGroup"
+      ]
+    },
+    "CreateSeriesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/series.create",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-createSeries",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateSeriesLogGroup"
+      ]
+    },
+    "UpdateSeriesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/series.update",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-updateSeries",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "UpdateSeriesLogGroup"
+      ]
+    },
+    "DeleteSeriesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/series.remove",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-deleteSeries",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DeleteSeriesLogGroup"
+      ]
+    },
+    "ListVotesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/proxy-votes.list",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-listVotes",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ListVotesLogGroup"
+      ]
+    },
+    "CreateVoteLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/proxy-votes.create",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-createVote",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "CreateVoteLogGroup"
+      ]
+    },
+    "UpdateVoteLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/proxy-votes.update",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-updateVote",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "UpdateVoteLogGroup"
+      ]
+    },
+    "DeleteVoteLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/proxy-votes.remove",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-deleteVote",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "DeleteVoteLogGroup"
+      ]
+    },
+    "ImportVotesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/proxy-votes.importCSV",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-importVotes",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ImportVotesLogGroup"
+      ]
+    },
+    "ClearVotesLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/proxy-votes.clearAll",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-clearVotes",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "ClearVotesLogGroup"
+      ]
+    },
+    "AdminCreateUserLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/users.create",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-adminCreateUser",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "AdminCreateUserLogGroup"
+      ]
+    },
+    "AdminListUsersLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/users.list",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-adminListUsers",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "AdminListUsersLogGroup"
+      ]
+    },
+    "AdminDeleteUserLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": {
+            "Ref": "ServerlessDeploymentBucket"
+          },
+          "S3Key": "serverless/offaways/dev/1771530630389-2026-02-19T19:50:30.389Z/offaways.zip"
+        },
+        "Handler": "src/handlers/users.remove",
+        "Runtime": "nodejs20.x",
+        "FunctionName": "offaways-dev-adminDeleteUser",
+        "MemorySize": 512,
+        "Timeout": 29,
+        "Environment": {
+          "Variables": {
+            "NODE_ENV": "dev",
+            "DB_HOST": {
+              "Fn::GetAtt": [
+                "AuroraCluster",
+                "Endpoint.Address"
+              ]
+            },
+            "DB_PORT": "5432",
+            "DB_NAME": "offaways",
+            "DB_USER": "offaways",
+            "DB_PASSWORD": "xTfiWyBiqSqf6HtChwhBN6zb3ZQTG3Zb",
+            "COGNITO_USER_POOL_ID": {
+              "Ref": "CognitoUserPool"
+            },
+            "COGNITO_CLIENT_ID": {
+              "Ref": "CognitoUserPoolClient"
+            },
+            "COGNITO_REGION": "us-east-1",
+            "CORS_ORIGIN": {
+              "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+            }
+          }
+        },
+        "Role": {
+          "Fn::GetAtt": [
+            "IamRoleLambdaExecution",
+            "Arn"
+          ]
+        },
+        "VpcConfig": {
+          "SecurityGroupIds": [
+            {
+              "Ref": "LambdaSecurityGroup"
+            }
+          ],
+          "SubnetIds": [
+            "subnet-0105cdbe05701d5e0",
+            "subnet-029aa52e943abc79a",
+            "subnet-0dedaa30e425ac326"
+          ]
+        }
+      },
+      "DependsOn": [
+        "AdminDeleteUserLogGroup"
+      ]
+    },
+    "SetupDbLambdaVersiontuiJVgZQuiaMtud64NihZ2Nxji6V88XenKuRjartVAk": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SetupDbLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E=",
+        "Description": "Run schema.sql against Aurora. Invoke once after first deploy."
+      }
+    },
+    "CognitoConfigLambdaVersionH8C5HypfPkwX2PUkGHZ4Z3D5mg4mpTd50toFWmEnYbo": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CognitoConfigLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "ListFilingsLambdaVersionUwUiknCO6tsVeIndq6xnBtbKiDScbv6l0EYN3u8uNg": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListFilingsLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "CreateFilingLambdaVersionfHwGDEqeVBI7xNIjBMhzXnJ76dLT6vvtf7Sj1YM": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateFilingLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "GetFilingLambdaVersionCIaMin8ZK9bU58U6sQilmQYkKMHgl7kDXXfWH6MX4": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "GetFilingLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "UpdateFilingLambdaVersionTVzidGm7QEYGgRQGwwWHj63r2Q1YuH4tDRfIy77QhQs": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "UpdateFilingLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "DeleteFilingLambdaVersionbscQSkg6AODHrYY7FKs6pT3ZQxOoQJnIfIdNm4c5mI": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DeleteFilingLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "SetFilingStatusLambdaVersionlb5uUUoBOjRvKEtKVVIuAQl1KX2jygjOSbXUjnUszwo": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "SetFilingStatusLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "ListSeriesLambdaVersionUDMVI9WVChGBrdbhH7kf6Eu1B375gPKfmFRywKcIHvA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListSeriesLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "CreateSeriesLambdaVersion1U25TKeeGBt3OePBZs6vb0EQebqIRDxptOkedyLpE": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateSeriesLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "UpdateSeriesLambdaVersionHXSp34zCQZkZIFCXOZlfEVpWPTSesBTLZpZyfPR2Ws": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "UpdateSeriesLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "DeleteSeriesLambdaVersion09io4gsaRM6tOlTIoDp5sh0HOFvDciiU7p4rVERoWNw": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DeleteSeriesLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "ListVotesLambdaVersionhsKrzVlGMXrRN5i1Rig3eZV4O3TJV7fH10ttqXdhA": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ListVotesLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "CreateVoteLambdaVersionlMP0jJEXJkM73L1F5WNFGP2BgJlT8ZExDcxaLU": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "CreateVoteLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "UpdateVoteLambdaVersionK6XJM2IV2bEMxeQpU7g3HwnsViGDom0un3m1ANGhHFU": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "UpdateVoteLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "DeleteVoteLambdaVersionaW7zN8Lf8C5yi4iy4oeSuDIAZGR7WDtuouTVF4NDocQ": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "DeleteVoteLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "ImportVotesLambdaVersionZhxj0TG22WYX6VpYHFmvdFwHovvr7p6XbhRgmGAZmg": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ImportVotesLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "ClearVotesLambdaVersionKe2zwQtu9QjYZYIK1TjWr1mAnqGT1Dc1Slkz0WyZQ": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "ClearVotesLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "AdminCreateUserLambdaVersionQcw2VhrYLJUbYKIjDglU6ypPzg18c24s9ZDPYR71tnc": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "AdminCreateUserLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "AdminListUsersLambdaVersionfH1ssEU6XTC2jyRTSsydI6bbCiuutIB9RpVK6SESKKk": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "AdminListUsersLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "AdminDeleteUserLambdaVersion8LJp5MfjxqLyjxatdVvOTvEB2zTRJsjJVCtc5eyE": {
+      "Type": "AWS::Lambda::Version",
+      "DeletionPolicy": "Retain",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "AdminDeleteUserLambdaFunction"
+        },
+        "CodeSha256": "rdq8CbTdB2W6n7FgK0z9NIyUR6Fas0OHN9xoa/hkM4E="
+      }
+    },
+    "ApiGatewayRestApi": {
+      "Type": "AWS::ApiGateway::RestApi",
+      "Properties": {
+        "Name": "dev-offaways",
+        "EndpointConfiguration": {
+          "Types": [
+            "EDGE"
+          ]
+        },
+        "Policy": ""
+      }
+    },
+    "ApiGatewayResourceApi": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Fn::GetAtt": [
+            "ApiGatewayRestApi",
+            "RootResourceId"
+          ]
+        },
+        "PathPart": "api",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiConfig": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApi"
+        },
+        "PathPart": "config",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilings": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApi"
+        },
+        "PathPart": "filings",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilingsIdVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiFilings"
+        },
+        "PathPart": "{id}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilingsIdVarStatus": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVar"
+        },
+        "PathPart": "status",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilingsIdVarSeries": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVar"
+        },
+        "PathPart": "series",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilingsIdVarSeriesSeriesidVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarSeries"
+        },
+        "PathPart": "{seriesId}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilingsIdVarVotes": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVar"
+        },
+        "PathPart": "votes",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilingsIdVarVotesVoteidVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotes"
+        },
+        "PathPart": "{voteId}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiFilingsIdVarVotesImport": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotes"
+        },
+        "PathPart": "import",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiAdmin": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApi"
+        },
+        "PathPart": "admin",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiAdminUsers": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiAdmin"
+        },
+        "PathPart": "users",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayResourceApiAdminUsersIdVar": {
+      "Type": "AWS::ApiGateway::Resource",
+      "Properties": {
+        "ParentId": {
+          "Ref": "ApiGatewayResourceApiAdminUsers"
+        },
+        "PathPart": "{id}",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiConfigOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiConfig"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilings"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsIdVarOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,PUT,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsIdVarStatusOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,PUT'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarStatus"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsIdVarSeriesOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarSeries"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsIdVarSeriesSeriesidVarOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,PUT'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarSeriesSeriesidVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,POST,GET'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotes"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesVoteidVarOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE,PUT'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotesVoteidVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesImportOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotesImport"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiAdminUsersOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,POST'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiAdminUsers"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiAdminUsersIdVarOptions": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "OPTIONS",
+        "MethodResponses": [
+          {
+            "StatusCode": "200",
+            "ResponseParameters": {
+              "method.response.header.Access-Control-Allow-Origin": true,
+              "method.response.header.Access-Control-Allow-Headers": true,
+              "method.response.header.Access-Control-Allow-Methods": true
+            },
+            "ResponseModels": {}
+          }
+        ],
+        "RequestParameters": {},
+        "Integration": {
+          "Type": "MOCK",
+          "RequestTemplates": {
+            "application/json": "{statusCode:200}"
+          },
+          "ContentHandling": "CONVERT_TO_TEXT",
+          "IntegrationResponses": [
+            {
+              "StatusCode": "200",
+              "ResponseParameters": {
+                "method.response.header.Access-Control-Allow-Origin": "'*'",
+                "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token,X-Amz-User-Agent,X-Amzn-Trace-Id'",
+                "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,DELETE'"
+              },
+              "ResponseTemplates": {
+                "application/json": ""
+              }
+            }
+          ]
+        },
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiAdminUsersIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        }
+      }
+    },
+    "ApiGatewayMethodApiConfigGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiConfig"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "NONE",
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CognitoConfigLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CognitoConfigLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilings"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ListFilingsLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ListFilingsLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilings"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CreateFilingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CreateFilingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "GetFilingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "GetFilingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarPut": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "PUT",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "UpdateFilingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "UpdateFilingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarDelete": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "DELETE",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "DeleteFilingLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "DeleteFilingLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarStatusPut": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "PUT",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarStatus"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "SetFilingStatusLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "SetFilingStatusLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarSeriesGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarSeries"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ListSeriesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ListSeriesLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarSeriesPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarSeries"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CreateSeriesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CreateSeriesLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarSeriesSeriesidVarPut": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "PUT",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarSeriesSeriesidVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "UpdateSeriesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "UpdateSeriesLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarSeriesSeriesidVarDelete": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "DELETE",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarSeriesSeriesidVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "DeleteSeriesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "DeleteSeriesLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotes"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ListVotesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ListVotesLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotes"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "CreateVoteLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "CreateVoteLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesVoteidVarPut": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "PUT",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotesVoteidVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "UpdateVoteLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "UpdateVoteLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesVoteidVarDelete": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "DELETE",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotesVoteidVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "DeleteVoteLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "DeleteVoteLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesImportPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotesImport"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ImportVotesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ImportVotesLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiFilingsIdVarVotesDelete": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "DELETE",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiFilingsIdVarVotes"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "ClearVotesLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "ClearVotesLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiAdminUsersPost": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "POST",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiAdminUsers"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "AdminCreateUserLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "AdminCreateUserLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiAdminUsersGet": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "GET",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiAdminUsers"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "AdminListUsersLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "AdminListUsersLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayMethodApiAdminUsersIdVarDelete": {
+      "Type": "AWS::ApiGateway::Method",
+      "Properties": {
+        "HttpMethod": "DELETE",
+        "RequestParameters": {},
+        "ResourceId": {
+          "Ref": "ApiGatewayResourceApiAdminUsersIdVar"
+        },
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ApiKeyRequired": false,
+        "AuthorizationType": "COGNITO_USER_POOLS",
+        "AuthorizerId": {
+          "Ref": "ApiGatewayAuthorizer"
+        },
+        "Integration": {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": {
+            "Fn::Join": [
+              "",
+              [
+                "arn:",
+                {
+                  "Ref": "AWS::Partition"
+                },
+                ":apigateway:",
+                {
+                  "Ref": "AWS::Region"
+                },
+                ":lambda:path/2015-03-31/functions/",
+                {
+                  "Fn::GetAtt": [
+                    "AdminDeleteUserLambdaFunction",
+                    "Arn"
+                  ]
+                },
+                "/invocations"
+              ]
+            ]
+          }
+        },
+        "MethodResponses": []
+      },
+      "DependsOn": [
+        "AdminDeleteUserLambdaPermissionApiGateway"
+      ]
+    },
+    "ApiGatewayDeployment1771530627529": {
+      "Type": "AWS::ApiGateway::Deployment",
+      "Properties": {
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "StageName": "dev"
+      },
+      "DependsOn": [
+        "ApiGatewayMethodApiConfigOptions",
+        "ApiGatewayMethodApiFilingsOptions",
+        "ApiGatewayMethodApiFilingsIdVarOptions",
+        "ApiGatewayMethodApiFilingsIdVarStatusOptions",
+        "ApiGatewayMethodApiFilingsIdVarSeriesOptions",
+        "ApiGatewayMethodApiFilingsIdVarSeriesSeriesidVarOptions",
+        "ApiGatewayMethodApiFilingsIdVarVotesOptions",
+        "ApiGatewayMethodApiFilingsIdVarVotesVoteidVarOptions",
+        "ApiGatewayMethodApiFilingsIdVarVotesImportOptions",
+        "ApiGatewayMethodApiAdminUsersOptions",
+        "ApiGatewayMethodApiAdminUsersIdVarOptions",
+        "ApiGatewayMethodApiConfigGet",
+        "ApiGatewayMethodApiFilingsGet",
+        "ApiGatewayMethodApiFilingsPost",
+        "ApiGatewayMethodApiFilingsIdVarGet",
+        "ApiGatewayMethodApiFilingsIdVarPut",
+        "ApiGatewayMethodApiFilingsIdVarDelete",
+        "ApiGatewayMethodApiFilingsIdVarStatusPut",
+        "ApiGatewayMethodApiFilingsIdVarSeriesGet",
+        "ApiGatewayMethodApiFilingsIdVarSeriesPost",
+        "ApiGatewayMethodApiFilingsIdVarSeriesSeriesidVarPut",
+        "ApiGatewayMethodApiFilingsIdVarSeriesSeriesidVarDelete",
+        "ApiGatewayMethodApiFilingsIdVarVotesGet",
+        "ApiGatewayMethodApiFilingsIdVarVotesPost",
+        "ApiGatewayMethodApiFilingsIdVarVotesVoteidVarPut",
+        "ApiGatewayMethodApiFilingsIdVarVotesVoteidVarDelete",
+        "ApiGatewayMethodApiFilingsIdVarVotesImportPost",
+        "ApiGatewayMethodApiFilingsIdVarVotesDelete",
+        "ApiGatewayMethodApiAdminUsersPost",
+        "ApiGatewayMethodApiAdminUsersGet",
+        "ApiGatewayMethodApiAdminUsersIdVarDelete"
+      ]
+    },
+    "CognitoConfigLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CognitoConfigLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "ListFilingsLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ListFilingsLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateFilingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateFilingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "GetFilingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "GetFilingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "UpdateFilingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "UpdateFilingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "DeleteFilingLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "DeleteFilingLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "SetFilingStatusLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "SetFilingStatusLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "ListSeriesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ListSeriesLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateSeriesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateSeriesLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "UpdateSeriesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "UpdateSeriesLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "DeleteSeriesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "DeleteSeriesLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "ListVotesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ListVotesLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CreateVoteLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "CreateVoteLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "UpdateVoteLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "UpdateVoteLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "DeleteVoteLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "DeleteVoteLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "ImportVotesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ImportVotesLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "ClearVotesLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "ClearVotesLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "AdminCreateUserLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "AdminCreateUserLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "AdminListUsersLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "AdminListUsersLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "AdminDeleteUserLambdaPermissionApiGateway": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Fn::GetAtt": [
+            "AdminDeleteUserLambdaFunction",
+            "Arn"
+          ]
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Join": [
+            "",
+            [
+              "arn:",
+              {
+                "Ref": "AWS::Partition"
+              },
+              ":execute-api:",
+              {
+                "Ref": "AWS::Region"
+              },
+              ":",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":",
+              {
+                "Ref": "ApiGatewayRestApi"
+              },
+              "/*/*"
+            ]
+          ]
+        }
+      }
+    },
+    "CognitoUserPool": {
+      "Type": "AWS::Cognito::UserPool",
+      "Properties": {
+        "UserPoolName": "offaways-dev",
+        "UsernameAttributes": [
+          "email"
+        ],
+        "AutoVerifiedAttributes": [
+          "email"
+        ],
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 8,
+            "RequireLowercase": true,
+            "RequireNumbers": true,
+            "RequireSymbols": false,
+            "RequireUppercase": true
+          }
+        },
+        "Schema": [
+          {
+            "Name": "email",
+            "AttributeDataType": "String",
+            "Mutable": false,
+            "Required": true
+          }
+        ]
+      }
+    },
+    "CognitoUserPoolClient": {
+      "Type": "AWS::Cognito::UserPoolClient",
+      "Properties": {
+        "ClientName": "offaways-web-dev",
+        "UserPoolId": {
+          "Ref": "CognitoUserPool"
+        },
+        "ExplicitAuthFlows": [
+          "ALLOW_USER_PASSWORD_AUTH",
+          "ALLOW_REFRESH_TOKEN_AUTH",
+          "ALLOW_USER_SRP_AUTH"
+        ],
+        "GenerateSecret": false,
+        "AccessTokenValidity": 1,
+        "IdTokenValidity": 1,
+        "RefreshTokenValidity": 30,
+        "TokenValidityUnits": {
+          "AccessToken": "hours",
+          "IdToken": "hours",
+          "RefreshToken": "days"
+        }
+      }
+    },
+    "CognitoAdminsGroup": {
+      "Type": "AWS::Cognito::UserPoolGroup",
+      "Properties": {
+        "GroupName": "Admins",
+        "UserPoolId": {
+          "Ref": "CognitoUserPool"
+        },
+        "Description": "Admin users with full access"
+      }
+    },
+    "ApiGatewayAuthorizer": {
+      "Type": "AWS::ApiGateway::Authorizer",
+      "Properties": {
+        "Name": "CognitoAuthorizer",
+        "Type": "COGNITO_USER_POOLS",
+        "IdentitySource": "method.request.header.Authorization",
+        "RestApiId": {
+          "Ref": "ApiGatewayRestApi"
+        },
+        "ProviderARNs": [
+          {
+            "Fn::GetAtt": [
+              "CognitoUserPool",
+              "Arn"
+            ]
+          }
+        ]
+      }
+    },
+    "LambdaSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Lambda outbound to Aurora",
+        "VpcId": "vpc-05ed11cecffb56a0b"
+      }
+    },
+    "AuroraSecurityGroup": {
+      "Type": "AWS::EC2::SecurityGroup",
+      "Properties": {
+        "GroupDescription": "Aurora - allow Lambda inbound on 5432",
+        "VpcId": "vpc-05ed11cecffb56a0b",
+        "SecurityGroupIngress": [
+          {
+            "IpProtocol": "tcp",
+            "FromPort": 5432,
+            "ToPort": 5432,
+            "SourceSecurityGroupId": {
+              "Ref": "LambdaSecurityGroup"
+            }
+          }
+        ]
+      }
+    },
+    "DBSubnetGroup": {
+      "Type": "AWS::RDS::DBSubnetGroup",
+      "Properties": {
+        "DBSubnetGroupDescription": "Aurora subnet group",
+        "SubnetIds": [
+          "subnet-0105cdbe05701d5e0",
+          "subnet-029aa52e943abc79a",
+          "subnet-0dedaa30e425ac326"
+        ]
+      }
+    },
+    "AuroraCluster": {
+      "Type": "AWS::RDS::DBCluster",
+      "DeletionPolicy": "Snapshot",
+      "Properties": {
+        "Engine": "aurora-postgresql",
+        "EngineVersion": "16.6",
+        "DatabaseName": "offaways",
+        "MasterUsername": "offaways",
+        "MasterUserPassword": {
+          "Fn::Sub": "{{resolve:ssm:/offaways/dev/db-password}}"
+        },
+        "VpcSecurityGroupIds": [
+          {
+            "Ref": "AuroraSecurityGroup"
+          }
+        ],
+        "DBSubnetGroupName": {
+          "Ref": "DBSubnetGroup"
+        },
+        "ServerlessV2ScalingConfiguration": {
+          "MinCapacity": 0.5,
+          "MaxCapacity": 8
+        },
+        "DeletionProtection": false,
+        "BackupRetentionPeriod": 7
+      }
+    },
+    "AuroraInstance": {
+      "Type": "AWS::RDS::DBInstance",
+      "Properties": {
+        "DBClusterIdentifier": {
+          "Ref": "AuroraCluster"
+        },
+        "DBInstanceClass": "db.serverless",
+        "Engine": "aurora-postgresql",
+        "PubliclyAccessible": false
+      }
+    },
+    "FrontendBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": true,
+          "BlockPublicPolicy": true,
+          "IgnorePublicAcls": true,
+          "RestrictPublicBuckets": true
+        }
+      }
+    },
+    "FrontendBucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "FrontendBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "cloudfront.amazonaws.com"
+              },
+              "Action": "s3:GetObject",
+              "Resource": {
+                "Fn::Sub": "${FrontendBucket.Arn}/*"
+              },
+              "Condition": {
+                "StringEquals": {
+                  "AWS:SourceArn": {
+                    "Fn::Sub": "arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "CloudFrontOAC": {
+      "Type": "AWS::CloudFront::OriginAccessControl",
+      "Properties": {
+        "OriginAccessControlConfig": {
+          "Name": "offaways-oac-dev",
+          "OriginAccessControlOriginType": "s3",
+          "SigningBehavior": "always",
+          "SigningProtocol": "sigv4"
+        }
+      }
+    },
+    "CloudFrontDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Enabled": true,
+          "HttpVersion": "http2",
+          "DefaultRootObject": "login.html",
+          "Origins": [
+            {
+              "Id": "S3Origin",
+              "DomainName": {
+                "Fn::GetAtt": [
+                  "FrontendBucket",
+                  "RegionalDomainName"
+                ]
+              },
+              "S3OriginConfig": {},
+              "OriginAccessControlId": {
+                "Ref": "CloudFrontOAC"
+              }
+            },
+            {
+              "Id": "APIOrigin",
+              "DomainName": {
+                "Fn::Sub": "${ApiGatewayRestApi}.execute-api.us-east-1.amazonaws.com"
+              },
+              "OriginPath": "/dev",
+              "CustomOriginConfig": {
+                "HTTPSPort": 443,
+                "OriginProtocolPolicy": "https-only"
+              }
+            }
+          ],
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "S3Origin",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "CachePolicyId": "658327ea-f89d-4fab-a63d-7e88639e58f6",
+            "Compress": true
+          },
+          "CacheBehaviors": [
+            {
+              "PathPattern": "/api/*",
+              "TargetOriginId": "APIOrigin",
+              "ViewerProtocolPolicy": "redirect-to-https",
+              "CachePolicyId": "4135ea2d-6df8-44a3-9df3-4b5a84be39ad",
+              "OriginRequestPolicyId": "b689b0a8-53d0-40ab-baf2-68738e2966ac",
+              "AllowedMethods": [
+                "GET",
+                "HEAD",
+                "OPTIONS",
+                "PUT",
+                "POST",
+                "PATCH",
+                "DELETE"
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": {
+        "Ref": "ServerlessDeploymentBucket"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-ServerlessDeploymentBucketName"
+      }
+    },
+    "SetupDbLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "SetupDbLambdaVersiontuiJVgZQuiaMtud64NihZ2Nxji6V88XenKuRjartVAk"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-SetupDbLambdaFunctionQualifiedArn"
+      }
+    },
+    "CognitoConfigLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CognitoConfigLambdaVersionH8C5HypfPkwX2PUkGHZ4Z3D5mg4mpTd50toFWmEnYbo"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-CognitoConfigLambdaFunctionQualifiedArn"
+      }
+    },
+    "ListFilingsLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListFilingsLambdaVersionUwUiknCO6tsVeIndq6xnBtbKiDScbv6l0EYN3u8uNg"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-ListFilingsLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateFilingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateFilingLambdaVersionfHwGDEqeVBI7xNIjBMhzXnJ76dLT6vvtf7Sj1YM"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-CreateFilingLambdaFunctionQualifiedArn"
+      }
+    },
+    "GetFilingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "GetFilingLambdaVersionCIaMin8ZK9bU58U6sQilmQYkKMHgl7kDXXfWH6MX4"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-GetFilingLambdaFunctionQualifiedArn"
+      }
+    },
+    "UpdateFilingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "UpdateFilingLambdaVersionTVzidGm7QEYGgRQGwwWHj63r2Q1YuH4tDRfIy77QhQs"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-UpdateFilingLambdaFunctionQualifiedArn"
+      }
+    },
+    "DeleteFilingLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DeleteFilingLambdaVersionbscQSkg6AODHrYY7FKs6pT3ZQxOoQJnIfIdNm4c5mI"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-DeleteFilingLambdaFunctionQualifiedArn"
+      }
+    },
+    "SetFilingStatusLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "SetFilingStatusLambdaVersionlb5uUUoBOjRvKEtKVVIuAQl1KX2jygjOSbXUjnUszwo"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-SetFilingStatusLambdaFunctionQualifiedArn"
+      }
+    },
+    "ListSeriesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListSeriesLambdaVersionUDMVI9WVChGBrdbhH7kf6Eu1B375gPKfmFRywKcIHvA"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-ListSeriesLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateSeriesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateSeriesLambdaVersion1U25TKeeGBt3OePBZs6vb0EQebqIRDxptOkedyLpE"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-CreateSeriesLambdaFunctionQualifiedArn"
+      }
+    },
+    "UpdateSeriesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "UpdateSeriesLambdaVersionHXSp34zCQZkZIFCXOZlfEVpWPTSesBTLZpZyfPR2Ws"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-UpdateSeriesLambdaFunctionQualifiedArn"
+      }
+    },
+    "DeleteSeriesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DeleteSeriesLambdaVersion09io4gsaRM6tOlTIoDp5sh0HOFvDciiU7p4rVERoWNw"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-DeleteSeriesLambdaFunctionQualifiedArn"
+      }
+    },
+    "ListVotesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ListVotesLambdaVersionhsKrzVlGMXrRN5i1Rig3eZV4O3TJV7fH10ttqXdhA"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-ListVotesLambdaFunctionQualifiedArn"
+      }
+    },
+    "CreateVoteLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "CreateVoteLambdaVersionlMP0jJEXJkM73L1F5WNFGP2BgJlT8ZExDcxaLU"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-CreateVoteLambdaFunctionQualifiedArn"
+      }
+    },
+    "UpdateVoteLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "UpdateVoteLambdaVersionK6XJM2IV2bEMxeQpU7g3HwnsViGDom0un3m1ANGhHFU"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-UpdateVoteLambdaFunctionQualifiedArn"
+      }
+    },
+    "DeleteVoteLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "DeleteVoteLambdaVersionaW7zN8Lf8C5yi4iy4oeSuDIAZGR7WDtuouTVF4NDocQ"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-DeleteVoteLambdaFunctionQualifiedArn"
+      }
+    },
+    "ImportVotesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ImportVotesLambdaVersionZhxj0TG22WYX6VpYHFmvdFwHovvr7p6XbhRgmGAZmg"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-ImportVotesLambdaFunctionQualifiedArn"
+      }
+    },
+    "ClearVotesLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "ClearVotesLambdaVersionKe2zwQtu9QjYZYIK1TjWr1mAnqGT1Dc1Slkz0WyZQ"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-ClearVotesLambdaFunctionQualifiedArn"
+      }
+    },
+    "AdminCreateUserLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "AdminCreateUserLambdaVersionQcw2VhrYLJUbYKIjDglU6ypPzg18c24s9ZDPYR71tnc"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-AdminCreateUserLambdaFunctionQualifiedArn"
+      }
+    },
+    "AdminListUsersLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "AdminListUsersLambdaVersionfH1ssEU6XTC2jyRTSsydI6bbCiuutIB9RpVK6SESKKk"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-AdminListUsersLambdaFunctionQualifiedArn"
+      }
+    },
+    "AdminDeleteUserLambdaFunctionQualifiedArn": {
+      "Description": "Current Lambda function version",
+      "Value": {
+        "Ref": "AdminDeleteUserLambdaVersion8LJp5MfjxqLyjxatdVvOTvEB2zTRJsjJVCtc5eyE"
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-AdminDeleteUserLambdaFunctionQualifiedArn"
+      }
+    },
+    "ServiceEndpoint": {
+      "Description": "URL of the service endpoint",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "https://",
+            {
+              "Ref": "ApiGatewayRestApi"
+            },
+            ".execute-api.",
+            {
+              "Ref": "AWS::Region"
+            },
+            ".",
+            {
+              "Ref": "AWS::URLSuffix"
+            },
+            "/dev"
+          ]
+        ]
+      },
+      "Export": {
+        "Name": "sls-offaways-dev-ServiceEndpoint"
+      }
+    },
+    "ApiGatewayUrl": {
+      "Value": {
+        "Fn::Sub": "https://${ApiGatewayRestApi}.execute-api.us-east-1.amazonaws.com/dev"
+      }
+    },
+    "CloudFrontUrl": {
+      "Value": {
+        "Fn::Sub": "https://${CloudFrontDistribution.DomainName}"
+      }
+    },
+    "CognitoUserPoolId": {
+      "Value": {
+        "Ref": "CognitoUserPool"
+      }
+    },
+    "CognitoClientId": {
+      "Value": {
+        "Ref": "CognitoUserPoolClient"
+      }
+    },
+    "FrontendBucketName": {
+      "Value": {
+        "Ref": "FrontendBucket"
+      }
+    },
+    "CloudFrontDistributionId": {
+      "Value": {
+        "Ref": "CloudFrontDistribution"
+      }
+    }
+  }
+}
