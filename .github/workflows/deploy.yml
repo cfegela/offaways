@@ -33,13 +33,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Semgrep
+        run: pip install semgrep
+
       - name: Run Semgrep
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: >
-            p/nodejs
-            p/owasp-top-ten
-            p/secrets
+        run: |
+          semgrep scan \
+            --config p/nodejs \
+            --config p/owasp-top-ten \
+            --config p/secrets \
+            --error \
+            backend/src backend/scripts frontend/js
 
   trivy:
     name: Trivy dependency + IaC scan
