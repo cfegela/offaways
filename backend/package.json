@@ -9,11 +9,24 @@
   "scripts": {
     "dev": "nodemon --legacy-watch --watch src src/local.js",
     "start": "node src/local.js",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
     "create-admin": "node scripts/create-admin.js",
     "deploy": "serverless deploy --stage dev",
     "deploy:prod": "serverless deploy --stage prod",
     "remove": "serverless remove --stage dev",
     "logs": "serverless logs -f listFilings -t --stage dev"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "testMatch": ["**/__tests__/**/*.test.js"],
+    "setupFiles": ["<rootDir>/src/__tests__/setup.js"],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/local.js",
+      "!src/handlers/setup.js"
+    ],
+    "coverageReporters": ["text", "lcov"]
   },
   "dependencies": {
     "aws-jwt-verify": "^4.0.1",
@@ -26,6 +39,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "jest": "^30.2.0",
     "nodemon": "^3.1.4",
     "serverless": "^3.38.0",
     "serverless-offline": "^13.6.0"
