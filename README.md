@@ -171,6 +171,96 @@ Creating or editing a filing follows a 4-step wizard:
 
 Five tables with UUID primary keys, `created_at`/`updated_at` timestamps (auto-updated via triggers), and cascading deletes.
 
+```mermaid
+erDiagram
+    users {
+        UUID id PK
+        VARCHAR cognito_sub
+        VARCHAR email
+        VARCHAR password_hash
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR role
+        BOOLEAN is_active
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    npx_filings {
+        UUID id PK
+        UUID user_id FK
+        VARCHAR status
+        VARCHAR filer_type
+        VARCHAR report_type
+        DATE period_start
+        DATE period_end
+        INTEGER amendment_number
+        VARCHAR amendment_type
+        VARCHAR filer_name
+        VARCHAR filer_cik
+        VARCHAR filer_lei
+        VARCHAR filer_crd
+        VARCHAR filer_city
+        VARCHAR filer_state
+        VARCHAR filer_zip
+        VARCHAR filer_country
+        VARCHAR agent_name
+        VARCHAR signatory_name
+        VARCHAR signatory_title
+        DATE signature_date
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    npx_filing_series {
+        UUID id PK
+        UUID filing_id FK
+        VARCHAR series_id
+        VARCHAR series_name
+        VARCHAR series_lei
+        INTEGER sort_order
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    npx_proxy_votes {
+        UUID id PK
+        UUID filing_id FK
+        UUID series_id FK
+        VARCHAR issuer_name
+        VARCHAR cusip
+        VARCHAR isin
+        VARCHAR figi
+        DATE meeting_date
+        VARCHAR meeting_type
+        TEXT vote_description
+        VARCHAR vote_source
+        VARCHAR vote_category
+        NUMERIC shares_voted
+        NUMERIC shares_on_loan
+        INTEGER sort_order
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    npx_vote_records {
+        UUID id PK
+        UUID proxy_vote_id FK
+        VARCHAR how_voted
+        VARCHAR mgmt_recommendation
+        NUMERIC shares
+        INTEGER sort_order
+        TIMESTAMPTZ created_at
+        TIMESTAMPTZ updated_at
+    }
+
+    users ||--o{ npx_filings : "owns"
+    npx_filings ||--o{ npx_filing_series : "has (RMIC only)"
+    npx_filings ||--o{ npx_proxy_votes : "contains"
+    npx_filing_series |o--o{ npx_proxy_votes : "scoped to"
+    npx_proxy_votes ||--o{ npx_vote_records : "voted as"
+```
+
 ### `users`
 Core user accounts. Stores both a `password_hash` (local dev) and `cognito_sub` (production).
 

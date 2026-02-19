@@ -27,7 +27,7 @@ jobs:
         working-directory: backend
 
   semgrep:
-    name: Semgrep Scan
+    name: Semgrep
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +46,7 @@ jobs:
             backend/src backend/scripts frontend/js
 
   trivy:
-    name: Trivy Scan
+    name: Trivy
     runs-on: ubuntu-latest
 
     steps:
