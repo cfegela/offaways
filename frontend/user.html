@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offaways — User</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container inner">
+      <span class="brand"><img src="/img/logo.svg" height="22" alt="" />Offaways</span>
+      <div class="navbar-actions">
+        <a href="/index.html">Filings</a>
+        <a href="/admin.html">Settings</a>
+        <a href="#" id="nav-logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page -->
+  <div class="container page">
+    <div class="page-header">
+      <h1 id="page-title">Create User</h1>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div id="form-error" class="alert alert-error hidden"></div>
+
+        <form id="user-form">
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="u-first">First name</label>
+                <input class="form-control" id="u-first" type="text" name="first_name" placeholder="Jane" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="u-last">Last name</label>
+                <input class="form-control" id="u-last" type="text" name="last_name" placeholder="Smith" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="u-email">Email <span class="required">*</span></label>
+              <input class="form-control" id="u-email" type="email" name="email"
+                     placeholder="user@example.com" required />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="u-password">Password <span id="password-required" class="required">*</span></label>
+              <input class="form-control" id="u-password" type="password" name="password"
+                     placeholder="At least 8 characters" />
+              <span class="form-hint hidden" id="password-hint">Leave blank to keep current password</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="u-role">Role</label>
+              <select class="form-control" id="u-role" name="role">
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+
+            <div class="form-group hidden" id="active-group">
+              <label class="form-label" for="u-active">Status</label>
+              <select class="form-control" id="u-active" name="is_active">
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;">
+            <a href="/admin.html" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="btn-save">Create User</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/user.js"></script>
+</body>
+</html>

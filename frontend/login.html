@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offaways — Sign In</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <div class="auth-page">
+    <div class="auth-card card">
+      <div class="card-body">
+        <div class="auth-logo">
+          <div class="auth-title">
+            <img src="/img/logo.svg" height="32" alt="" />
+            <h1>Offaways</h1>
+          </div>
+          <p>Secure Filing Management Portal</p>
+        </div>
+
+        <!-- Login Form -->
+        <form id="form-login" autocomplete="on">
+          <div style="display:flex; flex-direction:column; gap:.875rem;">
+            <div class="form-group">
+              <label class="form-label" for="login-email">Email</label>
+              <input class="form-control" id="login-email" type="email" name="email"
+                     placeholder="you@example.com" required autocomplete="email" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="login-password">Password</label>
+              <input class="form-control" id="login-password" type="password" name="password"
+                     placeholder="••••••••" required autocomplete="current-password" />
+            </div>
+            <div id="login-error" class="alert alert-error hidden"></div>
+            <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cognito SDK (loaded but only used in production) -->
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/login.js"></script>
+</body>
+</html>

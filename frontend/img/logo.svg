@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="#1e3a8a">
+  <!-- Mainsail -->
+  <path d="M13 2 L13 19 L2 19 Z"/>
+  <!-- Jib -->
+  <path d="M15 7 L15 18 L23 18 Z" fill-opacity="0.5"/>
+  <!-- Hull -->
+  <path d="M1 20 H27 L25 23 Q14 27 3 23 Z"/>
+</svg>

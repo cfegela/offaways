@@ -1,0 +1,366 @@
+service: offaways
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  region: us-east-1
+  stage: ${opt:stage, 'dev'}
+  memorySize: 512
+  timeout: 29
+
+  environment:
+    NODE_ENV:               ${self:provider.stage}
+    DB_HOST:                !GetAtt AuroraCluster.Endpoint.Address
+    DB_PORT:                '5432'
+    DB_NAME:                offaways
+    DB_USER:                offaways
+    DB_PASSWORD:            ${ssm:/offaways/${self:provider.stage}/db-password}
+    COGNITO_USER_POOL_ID:   !Ref CognitoUserPool
+    COGNITO_CLIENT_ID:      !Ref CognitoUserPoolClient
+    COGNITO_REGION:         ${self:provider.region}
+    CORS_ORIGIN:            !Sub 'https://${CloudFrontDistribution.DomainName}'
+
+  vpc:
+    securityGroupIds:
+      - !Ref LambdaSecurityGroup
+    subnetIds:
+      # ── REPLACE with your private subnet IDs ──────────────────────────────
+      - subnet-REPLACE_ME_1
+      - subnet-REPLACE_ME_2
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - cognito-idp:AdminGetUser
+            - cognito-idp:AdminDisableUser
+            - cognito-idp:AdminEnableUser
+            - cognito-idp:ListUsers
+            - cognito-idp:AdminAddUserToGroup
+            - cognito-idp:AdminRemoveUserFromGroup
+          Resource: !GetAtt CognitoUserPool.Arn
+
+custom:
+  vpcId: vpc-REPLACE_WITH_YOUR_VPC_ID   # ← fill in before deploying
+
+plugins:
+  - serverless-offline
+
+# ── Lambda Functions ──────────────────────────────────────────────────────────
+
+functions:
+  # Auth helper — returns Cognito config for the frontend
+  cognitoConfig:
+    handler: src/handlers/cognito-config.handler
+    events:
+      - http:
+          path: /config
+          method: get
+          cors: true
+
+  # Filings
+  listFilings:
+    handler: src/handlers/filings.list
+    events:
+      - http:
+          path: /filings
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  createFiling:
+    handler: src/handlers/filings.create
+    events:
+      - http:
+          path: /filings
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  getFiling:
+    handler: src/handlers/filings.get
+    events:
+      - http:
+          path: /filings/{id}
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  updateFiling:
+    handler: src/handlers/filings.update
+    events:
+      - http:
+          path: /filings/{id}
+          method: put
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  deleteFiling:
+    handler: src/handlers/filings.remove
+    events:
+      - http:
+          path: /filings/{id}
+          method: delete
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  # Admin — Users
+  adminCreateUser:
+    handler: src/handlers/users.create
+    events:
+      - http:
+          path: /admin/users
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  adminListUsers:
+    handler: src/handlers/users.list
+    events:
+      - http:
+          path: /admin/users
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  adminDeleteUser:
+    handler: src/handlers/users.remove
+    events:
+      - http:
+          path: /admin/users/{id}
+          method: delete
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+
+# ── AWS Resources ─────────────────────────────────────────────────────────────
+
+resources:
+  Resources:
+
+    # ── Cognito ───────────────────────────────────────────────────────────────
+
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: offaways-${self:provider.stage}
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: false
+            RequireUppercase: true
+        Schema:
+          - Name: email
+            AttributeDataType: String
+            Mutable: false
+            Required: true
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: offaways-web-${self:provider.stage}
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+          - ALLOW_USER_SRP_AUTH
+        GenerateSecret: false
+        AccessTokenValidity: 1
+        IdTokenValidity: 1
+        RefreshTokenValidity: 30
+        TokenValidityUnits:
+          AccessToken: hours
+          IdToken: hours
+          RefreshToken: days
+
+    CognitoAdminsGroup:
+      Type: AWS::Cognito::UserPoolGroup
+      Properties:
+        GroupName: Admins
+        UserPoolId: !Ref CognitoUserPool
+        Description: Admin users with full access
+
+    ApiGatewayAuthorizer:
+      Type: AWS::ApiGateway::Authorizer
+      Properties:
+        Name: CognitoAuthorizer
+        Type: COGNITO_USER_POOLS
+        IdentitySource: method.request.header.Authorization
+        RestApiId: !Ref ApiGatewayRestApi
+        ProviderARNs:
+          - !GetAtt CognitoUserPool.Arn
+
+    # ── Networking ────────────────────────────────────────────────────────────
+
+    LambdaSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Lambda outbound to Aurora
+        VpcId: ${self:custom.vpcId}
+
+    AuroraSecurityGroup:
+      Type: AWS::EC2::SecurityGroup
+      Properties:
+        GroupDescription: Aurora — allow Lambda inbound on 5432
+        VpcId: ${self:custom.vpcId}
+        SecurityGroupIngress:
+          - IpProtocol: tcp
+            FromPort: 5432
+            ToPort: 5432
+            SourceSecurityGroupId: !Ref LambdaSecurityGroup
+
+    DBSubnetGroup:
+      Type: AWS::RDS::DBSubnetGroup
+      Properties:
+        DBSubnetGroupDescription: Aurora subnet group
+        SubnetIds:
+          - subnet-REPLACE_ME_1
+          - subnet-REPLACE_ME_2
+
+    # ── Aurora Serverless v2 ──────────────────────────────────────────────────
+
+    AuroraCluster:
+      Type: AWS::RDS::DBCluster
+      DeletionPolicy: Snapshot
+      Properties:
+        Engine: aurora-postgresql
+        EngineVersion: '15.4'
+        DatabaseName: offaways
+        MasterUsername: offaways
+        MasterUserPassword: !Sub '{{resolve:ssm:/offaways/${self:provider.stage}/db-password}}'
+        VpcSecurityGroupIds:
+          - !Ref AuroraSecurityGroup
+        DBSubnetGroupName: !Ref DBSubnetGroup
+        ServerlessV2ScalingConfiguration:
+          MinCapacity: 0.5
+          MaxCapacity: 8
+        DeletionProtection: false
+        BackupRetentionPeriod: 7
+
+    AuroraInstance:
+      Type: AWS::RDS::DBInstance
+      Properties:
+        DBClusterIdentifier: !Ref AuroraCluster
+        DBInstanceClass: db.serverless
+        Engine: aurora-postgresql
+        PubliclyAccessible: false
+
+    # ── S3 Frontend Bucket ────────────────────────────────────────────────────
+
+    FrontendBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: offaways-frontend-${self:provider.stage}-${AWS::AccountId}
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: true
+          BlockPublicPolicy: true
+          IgnorePublicAcls: true
+          RestrictPublicBuckets: true
+
+    FrontendBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref FrontendBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: cloudfront.amazonaws.com
+              Action: s3:GetObject
+              Resource: !Sub '${FrontendBucket.Arn}/*'
+              Condition:
+                StringEquals:
+                  AWS:SourceArn: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+
+    CloudFrontOAC:
+      Type: AWS::CloudFront::OriginAccessControl
+      Properties:
+        OriginAccessControlConfig:
+          Name: offaways-oac-${self:provider.stage}
+          OriginAccessControlOriginType: s3
+          SigningBehavior: always
+          SigningProtocol: sigv4
+
+    # ── CloudFront ────────────────────────────────────────────────────────────
+
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Enabled: true
+          HttpVersion: http2
+          DefaultRootObject: login.html
+          Origins:
+            - Id: S3Origin
+              DomainName: !GetAtt FrontendBucket.RegionalDomainName
+              S3OriginConfig: {}
+              OriginAccessControlId: !Ref CloudFrontOAC
+            - Id: APIOrigin
+              DomainName: !Sub '${ApiGatewayRestApi}.execute-api.${self:provider.region}.amazonaws.com'
+              OriginPath: /${self:provider.stage}
+              CustomOriginConfig:
+                HTTPSPort: 443
+                OriginProtocolPolicy: https-only
+          DefaultCacheBehavior:
+            TargetOriginId: S3Origin
+            ViewerProtocolPolicy: redirect-to-https
+            CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # CachingOptimized
+            Compress: true
+          CacheBehaviors:
+            - PathPattern: /api/*
+              TargetOriginId: APIOrigin
+              ViewerProtocolPolicy: redirect-to-https
+              CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad  # CachingDisabled
+              OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac  # AllViewerExceptHostHeader
+              AllowedMethods:
+                - GET
+                - HEAD
+                - OPTIONS
+                - PUT
+                - POST
+                - PATCH
+                - DELETE
+
+  Outputs:
+    ApiGatewayUrl:
+      Value: !Sub 'https://${ApiGatewayRestApi}.execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}'
+
+    CloudFrontUrl:
+      Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+
+    CognitoUserPoolId:
+      Value: !Ref CognitoUserPool
+
+    CognitoClientId:
+      Value: !Ref CognitoUserPoolClient
+
+    FrontendBucketName:
+      Value: !Ref FrontendBucket
+
+    CloudFrontDistributionId:
+      Value: !Ref CloudFrontDistribution

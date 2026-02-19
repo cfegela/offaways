@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offaways — Settings</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container inner">
+      <a href="/index.html" class="brand" style="text-decoration:none;"><img src="/img/logo.svg" height="22" alt="" />Offaways</a>
+      <div class="navbar-actions">
+        <a href="/index.html">Filings</a>
+        <a href="/admin.html">Settings</a>
+        <a href="#" id="nav-logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Toast -->
+  <div style="position:fixed;top:1rem;right:1rem;z-index:999;max-width:340px;">
+    <div id="toast" class="alert hidden"></div>
+  </div>
+
+  <div class="container page">
+    <!-- Users -->
+    <div id="tab-users">
+      <div class="card">
+        <div class="card-header">
+          <h2>Users</h2>
+          <button class="btn btn-primary btn-sm" id="btn-new-user">+ Create User</button>
+        </div>
+
+        <!-- Loading -->
+        <div id="users-loading" class="empty-state hidden">
+          <span class="spinner" style="width:2rem;height:2rem;border-width:3px;"></span>
+        </div>
+
+        <!-- Empty -->
+        <div id="users-empty" class="empty-state hidden">
+          <strong>No users found</strong>
+        </div>
+
+        <!-- Table -->
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Status</th>
+                <th>Filings</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="users-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

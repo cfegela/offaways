@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offaways — Filing</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container inner">
+      <span class="brand"><img src="/img/logo.svg" height="22" alt="" />Offaways</span>
+      <div class="navbar-actions">
+        <a href="/index.html">Filings</a>
+        <a href="/admin.html">Settings</a>
+        <a href="#" id="nav-logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page -->
+  <div class="container page">
+    <div class="page-header">
+      <h1 id="page-title">New Filing</h1>
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+        <div id="form-error" class="alert alert-error hidden"></div>
+
+        <form id="filing-form">
+          <div style="display:flex;flex-direction:column;gap:1rem;">
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-first">First name <span class="required">*</span></label>
+                <input class="form-control" id="f-first" type="text" name="first_name"
+                       placeholder="Jane" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-last">Last name <span class="required">*</span></label>
+                <input class="form-control" id="f-last" type="text" name="last_name"
+                       placeholder="Smith" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-street">Street address <span class="required">*</span></label>
+              <input class="form-control" id="f-street" type="text" name="street_address"
+                     placeholder="123 Main St" required />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-city">City <span class="required">*</span></label>
+                <input class="form-control" id="f-city" type="text" name="city"
+                       placeholder="Springfield" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-state">State / Province <span class="required">*</span></label>
+                <input class="form-control" id="f-state" type="text" name="state"
+                       placeholder="IL" required />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-zip">ZIP / Postal code <span class="required">*</span></label>
+                <input class="form-control" id="f-zip" type="text" name="zip_code"
+                       placeholder="62701" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-country">Country</label>
+                <input class="form-control" id="f-country" type="text" name="country"
+                       placeholder="US" value="US" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="f-salary">Annual salary (USD) <span class="required">*</span></label>
+              <input class="form-control" id="f-salary" type="number" name="annual_salary"
+                     placeholder="75000" min="0" step="1" required />
+              <span class="form-hint">Enter the gross annual amount in US dollars.</span>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;">
+            <a href="/index.html" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/filing.js"></script>
+</body>
+</html>
