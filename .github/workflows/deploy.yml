@@ -26,10 +26,50 @@ jobs:
         run: npm test
         working-directory: backend
 
+  semgrep:
+    name: Semgrep SAST
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Semgrep
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: >
+            p/nodejs
+            p/owasp-top-ten
+            p/secrets
+
+  trivy:
+    name: Trivy dependency + IaC scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Scan dependencies (package-lock.json)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: backend
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+
+      - name: Scan IaC (serverless.yml + docker-compose)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: fs
+          scan-ref: .
+          scanners: misconfig
+          severity: CRITICAL,HIGH
+          exit-code: '1'
+
   deploy:
     name: Deploy to AWS (dev)
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test, semgrep, trivy]
 
     steps:
       - uses: actions/checkout@v4
