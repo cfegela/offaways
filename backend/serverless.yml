@@ -26,9 +26,9 @@ provider:
     securityGroupIds:
       - !Ref LambdaSecurityGroup
     subnetIds:
-      # ── REPLACE with your private subnet IDs ──────────────────────────────
-      - subnet-REPLACE_ME_1
-      - subnet-REPLACE_ME_2
+      - subnet-0105cdbe05701d5e0   # dev-private-subnet-a (us-east-1a)
+      - subnet-029aa52e943abc79a   # dev-private-subnet-b (us-east-1b)
+      - subnet-0dedaa30e425ac326   # dev-private-subnet-c (us-east-1c)
 
   iam:
     role:
@@ -36,6 +36,9 @@ provider:
         - Effect: Allow
           Action:
             - cognito-idp:AdminGetUser
+            - cognito-idp:AdminCreateUser
+            - cognito-idp:AdminDeleteUser
+            - cognito-idp:AdminSetUserPassword
             - cognito-idp:AdminDisableUser
             - cognito-idp:AdminEnableUser
             - cognito-idp:ListUsers
@@ -44,7 +47,7 @@ provider:
           Resource: !GetAtt CognitoUserPool.Arn
 
 custom:
-  vpcId: vpc-REPLACE_WITH_YOUR_VPC_ID   # ← fill in before deploying
+  vpcId: vpc-05ed11cecffb56a0b
 
 plugins:
   - serverless-offline
@@ -52,12 +55,18 @@ plugins:
 # ── Lambda Functions ──────────────────────────────────────────────────────────
 
 functions:
+  # One-shot DB schema initializer — invoke via AWS CLI, no HTTP event
+  setupDb:
+    handler: src/handlers/setup.handler
+    timeout: 60
+    description: 'Run schema.sql against Aurora. Invoke once after first deploy.'
+
   # Auth helper — returns Cognito config for the frontend
   cognitoConfig:
     handler: src/handlers/cognito-config.handler
     events:
       - http:
-          path: /config
+          path: /api/config
           method: get
           cors: true
 
@@ -66,7 +75,7 @@ functions:
     handler: src/handlers/filings.list
     events:
       - http:
-          path: /filings
+          path: /api/filings
           method: get
           cors: true
           authorizer:
@@ -77,7 +86,7 @@ functions:
     handler: src/handlers/filings.create
     events:
       - http:
-          path: /filings
+          path: /api/filings
           method: post
           cors: true
           authorizer:
@@ -88,7 +97,7 @@ functions:
     handler: src/handlers/filings.get
     events:
       - http:
-          path: /filings/{id}
+          path: /api/filings/{id}
           method: get
           cors: true
           authorizer:
@@ -99,7 +108,7 @@ functions:
     handler: src/handlers/filings.update
     events:
       - http:
-          path: /filings/{id}
+          path: /api/filings/{id}
           method: put
           cors: true
           authorizer:
@@ -110,7 +119,7 @@ functions:
     handler: src/handlers/filings.remove
     events:
       - http:
-          path: /filings/{id}
+          path: /api/filings/{id}
           method: delete
           cors: true
           authorizer:
@@ -121,7 +130,7 @@ functions:
     handler: src/handlers/filings.setStatus
     events:
       - http:
-          path: /filings/{id}/status
+          path: /api/filings/{id}/status
           method: put
           cors: true
           authorizer:
@@ -133,7 +142,7 @@ functions:
     handler: src/handlers/series.list
     events:
       - http:
-          path: /filings/{filingId}/series
+          path: /api/filings/{id}/series
           method: get
           cors: true
           authorizer:
@@ -144,7 +153,7 @@ functions:
     handler: src/handlers/series.create
     events:
       - http:
-          path: /filings/{filingId}/series
+          path: /api/filings/{id}/series
           method: post
           cors: true
           authorizer:
@@ -155,7 +164,7 @@ functions:
     handler: src/handlers/series.update
     events:
       - http:
-          path: /filings/{filingId}/series/{id}
+          path: /api/filings/{id}/series/{seriesId}
           method: put
           cors: true
           authorizer:
@@ -166,7 +175,7 @@ functions:
     handler: src/handlers/series.remove
     events:
       - http:
-          path: /filings/{filingId}/series/{id}
+          path: /api/filings/{id}/series/{seriesId}
           method: delete
           cors: true
           authorizer:
@@ -178,7 +187,7 @@ functions:
     handler: src/handlers/proxy-votes.list
     events:
       - http:
-          path: /filings/{filingId}/votes
+          path: /api/filings/{id}/votes
           method: get
           cors: true
           authorizer:
@@ -189,7 +198,7 @@ functions:
     handler: src/handlers/proxy-votes.create
     events:
       - http:
-          path: /filings/{filingId}/votes
+          path: /api/filings/{id}/votes
           method: post
           cors: true
           authorizer:
@@ -200,7 +209,7 @@ functions:
     handler: src/handlers/proxy-votes.update
     events:
       - http:
-          path: /filings/{filingId}/votes/{id}
+          path: /api/filings/{id}/votes/{voteId}
           method: put
           cors: true
           authorizer:
@@ -211,7 +220,7 @@ functions:
     handler: src/handlers/proxy-votes.remove
     events:
       - http:
-          path: /filings/{filingId}/votes/{id}
+          path: /api/filings/{id}/votes/{voteId}
           method: delete
           cors: true
           authorizer:
@@ -222,7 +231,7 @@ functions:
     handler: src/handlers/proxy-votes.importCSV
     events:
       - http:
-          path: /filings/{filingId}/votes/import
+          path: /api/filings/{id}/votes/import
           method: post
           cors: true
           authorizer:
@@ -233,7 +242,7 @@ functions:
     handler: src/handlers/proxy-votes.clearAll
     events:
       - http:
-          path: /filings/{filingId}/votes
+          path: /api/filings/{id}/votes
           method: delete
           cors: true
           authorizer:
@@ -245,7 +254,7 @@ functions:
     handler: src/handlers/users.create
     events:
       - http:
-          path: /admin/users
+          path: /api/admin/users
           method: post
           cors: true
           authorizer:
@@ -256,7 +265,7 @@ functions:
     handler: src/handlers/users.list
     events:
       - http:
-          path: /admin/users
+          path: /api/admin/users
           method: get
           cors: true
           authorizer:
@@ -267,7 +276,7 @@ functions:
     handler: src/handlers/users.remove
     events:
       - http:
-          path: /admin/users/{id}
+          path: /api/admin/users/{id}
           method: delete
           cors: true
           authorizer:
@@ -349,7 +358,7 @@ resources:
     AuroraSecurityGroup:
       Type: AWS::EC2::SecurityGroup
       Properties:
-        GroupDescription: Aurora — allow Lambda inbound on 5432
+        GroupDescription: Aurora - allow Lambda inbound on 5432
         VpcId: ${self:custom.vpcId}
         SecurityGroupIngress:
           - IpProtocol: tcp
@@ -362,8 +371,9 @@ resources:
       Properties:
         DBSubnetGroupDescription: Aurora subnet group
         SubnetIds:
-          - subnet-REPLACE_ME_1
-          - subnet-REPLACE_ME_2
+          - subnet-0105cdbe05701d5e0   # dev-private-subnet-a (us-east-1a)
+          - subnet-029aa52e943abc79a   # dev-private-subnet-b (us-east-1b)
+          - subnet-0dedaa30e425ac326   # dev-private-subnet-c (us-east-1c)
 
     # ── Aurora Serverless v2 ──────────────────────────────────────────────────
 
@@ -372,7 +382,7 @@ resources:
       DeletionPolicy: Snapshot
       Properties:
         Engine: aurora-postgresql
-        EngineVersion: '15.4'
+        EngineVersion: '16.6'
         DatabaseName: offaways
         MasterUsername: offaways
         MasterUserPassword: !Sub '{{resolve:ssm:/offaways/${self:provider.stage}/db-password}}'
@@ -398,7 +408,6 @@ resources:
     FrontendBucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: offaways-frontend-${self:provider.stage}-${AWS::AccountId}
         PublicAccessBlockConfiguration:
           BlockPublicAcls: true
           BlockPublicPolicy: true

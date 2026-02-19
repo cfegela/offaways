@@ -133,13 +133,23 @@ const Auth = (() => {
 
   // ── Public API ──────────────────────────────────────────────────────────────
 
+  function applyNavPermissions() {
+    const settingsLink = document.getElementById('nav-settings');
+    if (settingsLink && !isAdmin()) {
+      settingsLink.style.display = 'none';
+    }
+  }
+
   async function init() {
     if (!CONFIG.IS_LOCAL) {
       await loadCognitoConfig();
       const u = await getCognitoCurrentUser();
-      if (u) { _user = u; return u; }
+      if (u) { _user = u; }
+    } else {
+      loadSession();
     }
-    return loadSession();
+    applyNavPermissions();
+    return _user;
   }
 
   async function login(email, password) {

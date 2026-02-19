@@ -23,15 +23,19 @@ function isAdmin(claims) {
   // Local dev: role is a plain string on the JWT payload
   if (claims.role === 'admin') return true;
 
-  // Cognito: API Gateway serialises the groups array as a JSON string
+  // Cognito: API Gateway passes groups as a comma-separated string ("Admins")
+  // or occasionally as a JSON-stringified array ('["Admins"]').
   const groups = claims['cognito:groups'];
   if (!groups) return false;
-  try {
-    const parsed = typeof groups === 'string' ? JSON.parse(groups) : groups;
-    return Array.isArray(parsed) && parsed.includes('Admins');
-  } catch {
-    return false;
+  if (typeof groups === 'string') {
+    // Try JSON array first, then fall back to comma-separated
+    try {
+      const parsed = JSON.parse(groups);
+      if (Array.isArray(parsed)) return parsed.includes('Admins');
+    } catch { /* not JSON */ }
+    return groups.split(',').map((g) => g.trim()).includes('Admins');
   }
+  return Array.isArray(groups) && groups.includes('Admins');
 }
 
 /**

@@ -2,13 +2,18 @@
 
 /**
  * Admin-only user management handlers.
- * In production these routes are additionally protected at the API Gateway
- * level by requiring the caller to be in the Cognito "Admins" group.
+ *
+ * Local dev: users are stored in the DB with a bcrypt password_hash.
+ * Production: users are created in Cognito; the DB row is upserted on first
+ *   login via resolveUser(). The create handler also pre-inserts the DB row
+ *   so the user appears in the admin list immediately.
  */
 
 const { query }                   = require('../db/client');
 const { getClaims, isAdmin, resolveUser } = require('../utils/auth');
 const R                           = require('../utils/response');
+
+const IS_LOCAL = process.env.NODE_ENV === 'local';
 
 async function requireAdmin(event) {
   const claims = getClaims(event);
@@ -16,6 +21,11 @@ async function requireAdmin(event) {
   const user = await resolveUser(claims);
   if (!user) return { error: R.unauthorized() };
   return { claims, user };
+}
+
+function getCognitoClient() {
+  const { CognitoIdentityProviderClient } = require('@aws-sdk/client-cognito-identity-provider');
+  return new CognitoIdentityProviderClient({ region: process.env.COGNITO_REGION });
 }
 
 // ── Create user (admin only) ──────────────────────────────────────────────────
@@ -34,17 +44,75 @@ exports.create = async (event) => {
       return R.badRequest(`role must be one of: ${allowed_roles.join(', ')}`);
     }
 
-    const existing = await query('SELECT id FROM users WHERE email = $1', [email]);
-    if (existing.rows.length) return R.badRequest('Email already registered');
+    if (IS_LOCAL) {
+      const existing = await query('SELECT id FROM users WHERE email = $1', [email]);
+      if (existing.rows.length) return R.badRequest('Email already registered');
 
-    const bcrypt = require('bcryptjs');
-    const password_hash = await bcrypt.hash(password, 10);
+      const bcrypt = require('bcryptjs');
+      const password_hash = await bcrypt.hash(password, 10);
 
+      const result = await query(
+        `INSERT INTO users (email, password_hash, first_name, last_name, role)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id, email, first_name, last_name, role, is_active, created_at`,
+        [email, password_hash, first_name || '', last_name || '', role || 'user'],
+      );
+      return R.created(result.rows[0]);
+    }
+
+    // ── Production: create in Cognito ────────────────────────────────────────
+    const {
+      AdminCreateUserCommand,
+      AdminSetUserPasswordCommand,
+      AdminAddUserToGroupCommand,
+    } = require('@aws-sdk/client-cognito-identity-provider');
+
+    const cognito     = getCognitoClient();
+    const userPoolId  = process.env.COGNITO_USER_POOL_ID;
+
+    let cognitoUser;
+    try {
+      const res = await cognito.send(new AdminCreateUserCommand({
+        UserPoolId:    userPoolId,
+        Username:      email,
+        MessageAction: 'SUPPRESS',
+        UserAttributes: [
+          { Name: 'email',          Value: email },
+          { Name: 'email_verified', Value: 'true' },
+          ...(first_name ? [{ Name: 'given_name',   Value: first_name }] : []),
+          ...(last_name  ? [{ Name: 'family_name',  Value: last_name  }] : []),
+        ],
+      }));
+      cognitoUser = res.User;
+    } catch (err) {
+      if (err.name === 'UsernameExistsException') return R.badRequest('Email already registered');
+      throw err;
+    }
+
+    await cognito.send(new AdminSetUserPasswordCommand({
+      UserPoolId: userPoolId,
+      Username:   email,
+      Password:   password,
+      Permanent:  true,
+    }));
+
+    if (role === 'admin') {
+      await cognito.send(new AdminAddUserToGroupCommand({
+        UserPoolId: userPoolId,
+        Username:   email,
+        GroupName:  'Admins',
+      }));
+    }
+
+    // Pre-insert into DB so the user appears in the list before first login
+    const cognitoSub = cognitoUser.Attributes.find((a) => a.Name === 'sub')?.Value;
     const result = await query(
-      `INSERT INTO users (email, password_hash, first_name, last_name, role)
+      `INSERT INTO users (cognito_sub, email, first_name, last_name, role)
        VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (cognito_sub) DO UPDATE
+         SET email = EXCLUDED.email, updated_at = NOW()
        RETURNING id, email, first_name, last_name, role, is_active, created_at`,
-      [email, password_hash, first_name || '', last_name || '', role || 'user'],
+      [cognitoSub, email, first_name || '', last_name || '', role || 'user'],
     );
 
     return R.created(result.rows[0]);
@@ -154,6 +222,23 @@ exports.remove = async (event) => {
 
     if (id === adminUser.id) return R.badRequest('You cannot delete your own account');
 
+    if (!IS_LOCAL) {
+      // Production: remove from Cognito first
+      const userRes = await query('SELECT email FROM users WHERE id = $1', [id]);
+      if (!userRes.rows.length) return R.notFound('User not found');
+
+      const { AdminDeleteUserCommand } = require('@aws-sdk/client-cognito-identity-provider');
+      const cognito = getCognitoClient();
+      try {
+        await cognito.send(new AdminDeleteUserCommand({
+          UserPoolId: process.env.COGNITO_USER_POOL_ID,
+          Username:   userRes.rows[0].email,
+        }));
+      } catch (err) {
+        if (err.name !== 'UserNotFoundException') throw err;
+      }
+    }
+
     const result = await query('DELETE FROM users WHERE id = $1 RETURNING id', [id]);
     if (!result.rows.length) return R.notFound('User not found');
 
@@ -162,4 +247,3 @@ exports.remove = async (event) => {
     return R.serverError(err);
   }
 };
-

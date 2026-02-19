@@ -22,7 +22,7 @@ exports.list = async (event) => {
     const user   = await resolveUser(claims);
     if (!user) return R.unauthorized();
 
-    const { filingId } = event.pathParameters || {};
+    const { id: filingId } = event.pathParameters || {};
     const { error } = await getParentFiling(filingId, user, claims);
     if (error) return error;
 
@@ -77,7 +77,7 @@ exports.create = async (event) => {
     const user   = await resolveUser(claims);
     if (!user) return R.unauthorized();
 
-    const { filingId } = event.pathParameters || {};
+    const { id: filingId } = event.pathParameters || {};
     const { filing, error } = await getParentFiling(filingId, user, claims);
     if (error) return error;
 
@@ -101,7 +101,7 @@ exports.update = async (event) => {
     const user   = await resolveUser(claims);
     if (!user) return R.unauthorized();
 
-    const { filingId, id } = event.pathParameters || {};
+    const { id: filingId, voteId: id } = event.pathParameters || {};
     const { filing, error } = await getParentFiling(filingId, user, claims);
     if (error) return error;
 
@@ -131,7 +131,7 @@ exports.remove = async (event) => {
     const user   = await resolveUser(claims);
     if (!user) return R.unauthorized();
 
-    const { filingId, id } = event.pathParameters || {};
+    const { id: filingId, voteId: id } = event.pathParameters || {};
     const { filing, error } = await getParentFiling(filingId, user, claims);
     if (error) return error;
 
@@ -160,7 +160,7 @@ exports.importCSV = async (event) => {
     const user   = await resolveUser(claims);
     if (!user) return R.unauthorized();
 
-    const { filingId } = event.pathParameters || {};
+    const { id: filingId } = event.pathParameters || {};
     const { filing, error } = await getParentFiling(filingId, user, claims);
     if (error) return error;
 
@@ -231,7 +231,7 @@ exports.clearAll = async (event) => {
     const user   = await resolveUser(claims);
     if (!user) return R.unauthorized();
 
-    const { filingId } = event.pathParameters || {};
+    const { id: filingId } = event.pathParameters || {};
     const { filing, error } = await getParentFiling(filingId, user, claims);
     if (error) return error;
 

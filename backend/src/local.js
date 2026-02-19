@@ -97,37 +97,37 @@ app.put('/filings/:id/status',   localAuth, async (req, res) => {
 
 // ── Series (nested under filing) ──────────────────────────────────────────────
 
-app.get('/filings/:filingId/series',         localAuth, async (req, res) => {
+app.get('/filings/:id/series',              localAuth, async (req, res) => {
   sendResponse(res, await seriesHandler.list(createEvent(req)));
 });
-app.post('/filings/:filingId/series',        localAuth, async (req, res) => {
+app.post('/filings/:id/series',             localAuth, async (req, res) => {
   sendResponse(res, await seriesHandler.create(createEvent(req)));
 });
-app.put('/filings/:filingId/series/:id',     localAuth, async (req, res) => {
+app.put('/filings/:id/series/:seriesId',    localAuth, async (req, res) => {
   sendResponse(res, await seriesHandler.update(createEvent(req)));
 });
-app.delete('/filings/:filingId/series/:id',  localAuth, async (req, res) => {
+app.delete('/filings/:id/series/:seriesId', localAuth, async (req, res) => {
   sendResponse(res, await seriesHandler.remove(createEvent(req)));
 });
 
 // ── Proxy Votes (nested under filing) ────────────────────────────────────────
 
-app.get('/filings/:filingId/votes',          localAuth, async (req, res) => {
+app.get('/filings/:id/votes',               localAuth, async (req, res) => {
   sendResponse(res, await votesHandler.list(createEvent(req)));
 });
-app.post('/filings/:filingId/votes',         localAuth, async (req, res) => {
-  sendResponse(res, await votesHandler.create(createEvent(req)));
-});
-app.put('/filings/:filingId/votes/:id',      localAuth, async (req, res) => {
-  sendResponse(res, await votesHandler.update(createEvent(req)));
-});
-app.delete('/filings/:filingId/votes/:id',   localAuth, async (req, res) => {
-  sendResponse(res, await votesHandler.remove(createEvent(req)));
-});
-app.post('/filings/:filingId/votes/import',  localAuth, async (req, res) => {
+app.post('/filings/:id/votes/import',       localAuth, async (req, res) => {
   sendResponse(res, await votesHandler.importCSV(createEvent(req)));
 });
-app.delete('/filings/:filingId/votes',       localAuth, async (req, res) => {
+app.post('/filings/:id/votes',              localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.create(createEvent(req)));
+});
+app.put('/filings/:id/votes/:voteId',       localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.update(createEvent(req)));
+});
+app.delete('/filings/:id/votes/:voteId',    localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.remove(createEvent(req)));
+});
+app.delete('/filings/:id/votes',            localAuth, async (req, res) => {
   sendResponse(res, await votesHandler.clearAll(createEvent(req)));
 });
 
