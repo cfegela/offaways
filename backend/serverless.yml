@@ -283,6 +283,28 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId: !Ref ApiGatewayAuthorizer
 
+  adminGetUser:
+    handler: src/handlers/users.getOne
+    events:
+      - http:
+          path: /api/admin/users/{id}
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  adminUpdateUser:
+    handler: src/handlers/users.update
+    events:
+      - http:
+          path: /api/admin/users/{id}
+          method: put
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
 
 # ── AWS Resources ─────────────────────────────────────────────────────────────
 

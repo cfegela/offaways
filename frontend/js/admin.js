@@ -100,12 +100,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => toast.classList.add('hidden'), 3500);
   }
 
-  // ── Utils ─────────────────────────────────────────────────────────────────
-
-  function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
   // ── Init ──────────────────────────────────────────────────────────────────
 
   await loadUsers();

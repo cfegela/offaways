@@ -26,10 +26,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Helpers ────────────────────────────────────────────────────────────────
 
-  function esc(s) {
-    return String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  }
-
   function showToast(msg, type = 'success') {
     const el = document.getElementById('toast');
     el.textContent = msg;

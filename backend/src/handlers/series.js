@@ -1,17 +1,9 @@
 'use strict';
 
 const { query }                   = require('../db/client');
-const { getClaims, isAdmin, resolveUser } = require('../utils/auth');
+const { getClaims, resolveUser }  = require('../utils/auth');
 const R                           = require('../utils/response');
-
-// Helper: verify the caller owns (or is admin of) the parent filing
-async function getParentFiling(filingId, user, claims) {
-  const result = await query('SELECT * FROM npx_filings WHERE id = $1', [filingId]);
-  const filing = result.rows[0];
-  if (!filing) return { error: R.notFound('Filing not found') };
-  if (filing.user_id !== user.id && !isAdmin(claims)) return { error: R.forbidden() };
-  return { filing };
-}
+const { getParentFiling }         = require('../utils/filing-helpers');
 
 // ── List ──────────────────────────────────────────────────────────────────────
 
