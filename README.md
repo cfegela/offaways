@@ -421,6 +421,56 @@ aws cloudfront create-invalidation --distribution-id $DIST_ID --paths "/*"
 
 ---
 
+## CI / Quality Gates
+
+Every push to `main` runs three gates in parallel before deployment is allowed.
+
+### Tests
+
+Jest unit test suite covering all Lambda handlers and utilities. Tests run against an in-memory mock of the database client — no real database required.
+
+| Test file | Coverage area |
+|---|---|
+| `handlers/auth.test.js` | Local login, JWT generation |
+| `handlers/filings.test.js` | Filing CRUD, status transitions, validation |
+| `handlers/series.test.js` | Fund series CRUD |
+| `handlers/proxy-votes.test.js` | Proxy vote CRUD, CSV import, bulk delete |
+| `handlers/users.test.js` | Admin user management |
+| `utils/auth.test.js` | `resolveUser()`, admin detection (local + Cognito) |
+| `utils/csv-parser.test.js` | CSV parsing and row grouping logic |
+| `utils/response.test.js` | Response helper formatting |
+
+Run locally:
+
+```bash
+cd backend
+npm test               # run all tests
+npm run test:coverage  # with coverage report
+```
+
+### Security Scanning
+
+Two Trivy scans and one Semgrep SAST scan run on every push.
+
+#### Semgrep (SAST)
+
+Scans `backend/src`, `backend/scripts`, and `frontend/js` using three rulesets. Fails the build on any finding.
+
+| Ruleset | What it checks |
+|---|---|
+| `p/nodejs` | Node.js-specific vulnerabilities |
+| `p/owasp-top-ten` | Injection, auth issues, misconfigurations |
+| `p/secrets` | Hardcoded credentials and API keys |
+
+#### Trivy
+
+| Scan | Target | Scanners | Fails on |
+|---|---|---|---|
+| Dependency vulnerabilities | `backend/package-lock.json` | `vuln` | CRITICAL, HIGH |
+| IaC misconfiguration | `serverless.yml`, `docker-compose.yml` | `misconfig` | CRITICAL, HIGH |
+
+---
+
 ## Notes
 
 - **Aurora Serverless v2** does not support the Data API. Lambda functions run inside the VPC and connect to Aurora directly via `pg`.
