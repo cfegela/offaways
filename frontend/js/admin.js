@@ -56,12 +56,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         <td>${u.filing_count}</td>
         <td>${new Date(u.created_at).toLocaleDateString()}</td>
         <td class="actions-cell">
-          <a href="/user.html?id=${u.id}" class="btn btn-sm btn-secondary">Edit</a>
-          <button class="btn btn-sm btn-danger"
-                  data-delete-user="${u.id}"
-                  ${u.id === user.id ? 'disabled' : ''}>
-            Delete
-          </button>
+          <button class="btn btn-sm btn-secondary" data-edit-user="${u.id}">Edit</button>
+          <button class="btn btn-sm btn-danger" data-delete-user="${u.id}" ${u.id === user.id ? 'disabled' : ''}>Delete</button>
         </td>`;
       usersTbody.appendChild(tr);
     });
@@ -73,6 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const btn = e.target.closest('button');
     if (!btn || btn.disabled) return;
 
+    if (btn.dataset.editUser)   window.location.href = `/user.html?id=${btn.dataset.editUser}`;
     if (btn.dataset.deleteUser) await deleteUser(btn.dataset.deleteUser);
   });
 
