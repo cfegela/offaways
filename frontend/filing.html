@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Offaways — Filing</title>
+  <title>Offaways — N-PX Filing</title>
   <link rel="stylesheet" href="/css/styles.css" />
 </head>
 <body>
@@ -20,76 +20,479 @@
     </div>
   </nav>
 
+  <!-- Toast -->
+  <div style="position:fixed;top:1rem;right:1rem;z-index:999;max-width:340px;">
+    <div id="toast" class="alert hidden"></div>
+  </div>
+
   <!-- Page -->
   <div class="container page">
+
+    <!-- Page header -->
     <div class="page-header">
-      <h1 id="page-title">New Filing</h1>
+      <div>
+        <h1 id="page-title">N-PX Filing</h1>
+        <p id="filing-id-subtitle" class="hidden" style="font-size:.8rem;color:var(--color-muted);margin:0;font-family:monospace;"></p>
+      </div>
+      <div style="display:flex;align-items:center;gap:.75rem;">
+        <span id="status-badge" class="badge badge-draft hidden">draft</span>
+        <button class="btn btn-secondary btn-sm hidden" id="btn-return-draft">Return to Draft</button>
+        <a href="/index.html" class="btn btn-secondary btn-sm">← Back</a>
+      </div>
     </div>
 
+    <!-- Global error -->
+    <div id="global-error" class="alert alert-error hidden" style="margin-bottom:1rem;"></div>
+
+    <!-- Steps trail -->
+    <div class="steps-trail" id="steps-trail">
+      <div class="step active" data-step="1">
+        <div class="step-circle">1</div>
+        <div class="step-label">Cover Page</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" data-step="2">
+        <div class="step-circle">2</div>
+        <div class="step-label">Series</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" data-step="3">
+        <div class="step-circle">3</div>
+        <div class="step-label">Proxy Votes</div>
+      </div>
+      <div class="step-connector"></div>
+      <div class="step" data-step="4">
+        <div class="step-circle">4</div>
+        <div class="step-label">Signature</div>
+      </div>
+    </div>
+
+    <!-- Card -->
     <div class="card">
-      <div class="card-body">
-        <div id="form-error" class="alert alert-error hidden"></div>
+      <div class="card-body" style="padding-top:1.5rem;">
 
-        <form id="filing-form">
-          <div style="display:flex;flex-direction:column;gap:1rem;">
+        <!-- ── Step 1: Cover Page ───────────────────────────────────────── -->
+        <div id="step-1" class="step-panel">
+
+          <!-- Report Info -->
+          <section class="form-section">
+            <h3 class="section-title">Report Information</h3>
             <div class="form-row">
               <div class="form-group">
-                <label class="form-label" for="f-first">First name <span class="required">*</span></label>
-                <input class="form-control" id="f-first" type="text" name="first_name"
-                       placeholder="Jane" required />
+                <label class="form-label" for="f-filer-type">Filer Type <span class="required">*</span></label>
+                <select class="form-control" id="f-filer-type" name="filer_type">
+                  <option value="RMIC">RMIC — Registered Management Investment Company</option>
+                  <option value="IM">IM — Institutional Manager</option>
+                </select>
               </div>
               <div class="form-group">
-                <label class="form-label" for="f-last">Last name <span class="required">*</span></label>
-                <input class="form-control" id="f-last" type="text" name="last_name"
-                       placeholder="Smith" required />
+                <label class="form-label" for="f-report-type">Report Type <span class="required">*</span></label>
+                <select class="form-control" id="f-report-type" name="report_type">
+                  <option value="NPX">N-PX (Annual)</option>
+                  <option value="NPX-A">N-PX/A (Amendment)</option>
+                </select>
               </div>
             </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-period-start">Period Start <span class="required">*</span></label>
+                <input class="form-control" id="f-period-start" type="date" name="period_start" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-period-end">Period End <span class="required">*</span></label>
+                <input class="form-control" id="f-period-end" type="date" name="period_end" />
+              </div>
+            </div>
+            <div id="amendment-fields" class="form-row" style="display:none;">
+              <div class="form-group">
+                <label class="form-label" for="f-amendment-number">Amendment Number</label>
+                <input class="form-control" id="f-amendment-number" type="number" name="amendment_number" min="1" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-amendment-type">Amendment Type</label>
+                <input class="form-control" id="f-amendment-type" type="text" name="amendment_type" />
+              </div>
+            </div>
+          </section>
 
+          <!-- Filer Identity -->
+          <section class="form-section">
+            <h3 class="section-title">Filer Identity</h3>
+            <div class="form-row">
+              <div class="form-group" style="grid-column:1/-1;">
+                <label class="form-label" for="f-filer-name">Filer Name <span class="required">*</span></label>
+                <input class="form-control" id="f-filer-name" type="text" name="filer_name" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-filer-cik">CIK</label>
+                <input class="form-control" id="f-filer-cik" type="text" name="filer_cik" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-filer-lei">LEI</label>
+                <input class="form-control" id="f-filer-lei" type="text" name="filer_lei" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-filer-crd">CRD Number</label>
+                <input class="form-control" id="f-filer-crd" type="text" name="filer_crd" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-filer-phone">Phone</label>
+                <input class="form-control" id="f-filer-phone" type="tel" name="filer_phone" />
+              </div>
+            </div>
             <div class="form-group">
-              <label class="form-label" for="f-street">Street address <span class="required">*</span></label>
-              <input class="form-control" id="f-street" type="text" name="street_address"
-                     placeholder="123 Main St" required />
+              <label class="form-label" for="f-filer-street1">Street Address <span class="required">*</span></label>
+              <input class="form-control" id="f-filer-street1" type="text" name="filer_street1" />
             </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="f-city">City <span class="required">*</span></label>
-                <input class="form-control" id="f-city" type="text" name="city"
-                       placeholder="Springfield" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="f-state">State / Province <span class="required">*</span></label>
-                <input class="form-control" id="f-state" type="text" name="state"
-                       placeholder="IL" required />
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group">
-                <label class="form-label" for="f-zip">ZIP / Postal code <span class="required">*</span></label>
-                <input class="form-control" id="f-zip" type="text" name="zip_code"
-                       placeholder="62701" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="f-country">Country</label>
-                <input class="form-control" id="f-country" type="text" name="country"
-                       placeholder="US" value="US" />
-              </div>
-            </div>
-
             <div class="form-group">
-              <label class="form-label" for="f-salary">Annual salary (USD) <span class="required">*</span></label>
-              <input class="form-control" id="f-salary" type="number" name="annual_salary"
-                     placeholder="75000" min="0" step="1" required />
-              <span class="form-hint">Enter the gross annual amount in US dollars.</span>
+              <label class="form-label" for="f-filer-street2">Street Address 2</label>
+              <input class="form-control" id="f-filer-street2" type="text" name="filer_street2" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-filer-city">City <span class="required">*</span></label>
+                <input class="form-control" id="f-filer-city" type="text" name="filer_city" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-filer-state">State <span class="required">*</span></label>
+                <input class="form-control" id="f-filer-state" type="text" name="filer_state" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-filer-zip">ZIP <span class="required">*</span></label>
+                <input class="form-control" id="f-filer-zip" type="text" name="filer_zip" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-filer-country">Country</label>
+                <input class="form-control" id="f-filer-country" type="text" name="filer_country" value="US" />
+              </div>
+            </div>
+          </section>
+
+          <!-- Agent for Service -->
+          <section class="form-section">
+            <h3 class="section-title">Agent for Service of Process</h3>
+            <div class="form-group">
+              <label class="form-label" for="f-agent-name">Agent Name</label>
+              <input class="form-control" id="f-agent-name" type="text" name="agent_name" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-agent-street1">Street Address</label>
+              <input class="form-control" id="f-agent-street1" type="text" name="agent_street1" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-agent-street2">Street Address 2</label>
+              <input class="form-control" id="f-agent-street2" type="text" name="agent_street2" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-agent-city">City</label>
+                <input class="form-control" id="f-agent-city" type="text" name="agent_city" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-agent-state">State</label>
+                <input class="form-control" id="f-agent-state" type="text" name="agent_state" />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-agent-zip">ZIP</label>
+                <input class="form-control" id="f-agent-zip" type="text" name="agent_zip" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-agent-country">Country</label>
+                <input class="form-control" id="f-agent-country" type="text" name="agent_country" value="US" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-agent-phone">Phone</label>
+              <input class="form-control" id="f-agent-phone" type="tel" name="agent_phone" />
+            </div>
+          </section>
+
+          <div class="step-nav">
+            <span></span>
+            <div style="display:flex;gap:.75rem;">
+              <button class="btn btn-secondary" id="btn-step1-exit">Save &amp; Exit</button>
+              <button class="btn btn-primary"   id="btn-step1-save">Continue</button>
             </div>
           </div>
+        </div><!-- /step-1 -->
 
-          <div style="display:flex;gap:.75rem;justify-content:flex-end;margin-top:1.5rem;">
-            <a href="/index.html" class="btn btn-secondary">Cancel</a>
-            <button type="submit" class="btn btn-primary" id="btn-save">Save</button>
+        <!-- ── Step 2: Series ──────────────────────────────────────────── -->
+        <div id="step-2" class="step-panel hidden">
+          <div id="series-im-notice" class="alert alert-info hidden" style="margin-bottom:1rem;">
+            Series are only applicable to RMIC filers. This filing is type IM.
           </div>
-        </form>
+          <div id="series-content">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:1rem;">
+              <button class="btn btn-primary btn-sm" id="btn-add-series">+ Add Series</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Series ID</th>
+                    <th>Series Name</th>
+                    <th>LEI</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="series-tbody"></tbody>
+              </table>
+            </div>
+            <div id="series-empty" class="empty-state hidden">
+              <strong>No series added yet</strong>
+              <p>Click "Add Series" to add fund series.</p>
+            </div>
+          </div>
+          <div class="step-nav">
+            <button class="btn btn-secondary" id="btn-step2-back">← Back</button>
+            <div style="display:flex;gap:.75rem;">
+              <button class="btn btn-secondary" id="btn-step2-exit">Save &amp; Exit</button>
+              <button class="btn btn-primary"   id="btn-step2-next">Continue</button>
+            </div>
+          </div>
+        </div><!-- /step-2 -->
+
+        <!-- ── Step 3: Proxy Votes ─────────────────────────────────────── -->
+        <div id="step-3" class="step-panel hidden">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;">
+            <div style="display:flex;gap:.5rem;">
+              <button class="btn btn-primary btn-sm" id="btn-add-vote">+ Add Vote</button>
+              <label class="btn btn-secondary btn-sm" style="cursor:pointer;">
+                Import CSV
+                <input type="file" id="csv-file-input" accept=".csv" style="display:none;" />
+              </label>
+              <button class="btn btn-secondary btn-sm" id="btn-download-template">Template</button>
+            </div>
+            <button class="btn btn-danger btn-sm" id="btn-clear-votes">Clear All</button>
+          </div>
+
+          <div id="votes-loading" class="empty-state hidden">
+            <span class="spinner" style="width:1.5rem;height:1.5rem;border-width:2px;"></span>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Issuer</th>
+                  <th>CUSIP</th>
+                  <th>Meeting Date</th>
+                  <th>Description</th>
+                  <th>How Voted</th>
+                  <th>Shares</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="votes-tbody"></tbody>
+            </table>
+          </div>
+
+          <div id="votes-empty" class="empty-state hidden">
+            <strong>No proxy votes yet</strong>
+            <p>Add votes manually or import from CSV.</p>
+          </div>
+
+          <div id="votes-pagination" class="pagination hidden"></div>
+
+          <div class="step-nav">
+            <button class="btn btn-secondary" id="btn-step3-back">← Back</button>
+            <div style="display:flex;gap:.75rem;">
+              <button class="btn btn-secondary" id="btn-step3-exit">Save &amp; Exit</button>
+              <button class="btn btn-primary"   id="btn-step3-next">Continue</button>
+            </div>
+          </div>
+        </div><!-- /step-3 -->
+
+        <!-- ── Step 4: Signature ───────────────────────────────────────── -->
+        <div id="step-4" class="step-panel hidden">
+          <section class="form-section">
+            <h3 class="section-title">Signature</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="f-signatory-name">Signatory Name <span class="required">*</span></label>
+                <input class="form-control" id="f-signatory-name" type="text" name="signatory_name" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="f-signatory-title">Title <span class="required">*</span></label>
+                <input class="form-control" id="f-signatory-title" type="text" name="signatory_title" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="f-signature-date">Date <span class="required">*</span></label>
+              <input class="form-control" id="f-signature-date" type="date" name="signature_date" style="max-width:240px;" />
+            </div>
+          </section>
+
+          <div class="step-nav">
+            <button class="btn btn-secondary" id="btn-step4-back">← Back</button>
+            <div style="display:flex;gap:.75rem;">
+              <button class="btn btn-secondary" id="btn-step4-exit">Save &amp; Exit</button>
+              <button class="btn btn-primary"   id="btn-step4-submit">Submit Filing</button>
+            </div>
+          </div>
+        </div><!-- /step-4 -->
+
+      </div><!-- /card-body -->
+    </div><!-- /card -->
+  </div><!-- /container -->
+
+  <!-- ── Series Modal ──────────────────────────────────────────────────────── -->
+  <div class="modal-backdrop hidden" id="series-modal">
+    <div class="modal" style="max-width:480px;" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 id="series-modal-title">Add Series</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="sm-series-id">Series ID</label>
+          <input class="form-control" id="sm-series-id" type="text" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sm-series-name">Series Name</label>
+          <input class="form-control" id="sm-series-name" type="text" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="sm-series-lei">LEI</label>
+          <input class="form-control" id="sm-series-lei" type="text" />
+        </div>
+        <div id="series-modal-error" class="alert alert-error hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-series-cancel">Cancel</button>
+        <button class="btn btn-primary"   id="btn-series-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Vote Modal ────────────────────────────────────────────────────────── -->
+  <div class="modal-backdrop hidden" id="vote-modal">
+    <div class="modal" style="max-width:640px;" role="dialog" aria-modal="true">
+      <div class="modal-header">
+        <h2 id="vote-modal-title">Add Proxy Vote</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="vm-issuer-name">Issuer Name</label>
+            <input class="form-control" id="vm-issuer-name" type="text" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vm-cusip">CUSIP</label>
+            <input class="form-control" id="vm-cusip" type="text" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="vm-isin">ISIN</label>
+            <input class="form-control" id="vm-isin" type="text" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vm-figi">FIGI</label>
+            <input class="form-control" id="vm-figi" type="text" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="vm-meeting-date">Meeting Date</label>
+            <input class="form-control" id="vm-meeting-date" type="date" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vm-meeting-type">Meeting Type</label>
+            <select class="form-control" id="vm-meeting-type">
+              <option value="">— select —</option>
+              <option value="Annual">Annual</option>
+              <option value="Special">Special</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="vm-vote-description">Vote Description</label>
+          <textarea class="form-control" id="vm-vote-description" rows="2"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="vm-vote-source">Vote Source</label>
+            <input class="form-control" id="vm-vote-source" type="text" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vm-vote-category">Vote Category</label>
+            <input class="form-control" id="vm-vote-category" type="text" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="vm-shares-voted">Shares Voted</label>
+            <input class="form-control" id="vm-shares-voted" type="number" min="0" step="0.0001" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="vm-shares-on-loan">Shares on Loan</label>
+            <input class="form-control" id="vm-shares-on-loan" type="number" min="0" step="0.0001" />
+          </div>
+        </div>
+        <div style="border-top:1px solid var(--color-border);padding-top:1rem;margin-top:.5rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;">
+            <strong style="font-size:.875rem;">Vote Records</strong>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-add-record">+ Add Record</button>
+          </div>
+          <div id="vote-records-container"></div>
+        </div>
+        <div id="vote-modal-error" class="alert alert-error hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-vote-cancel">Cancel</button>
+        <button class="btn btn-primary"   id="btn-vote-save">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Clear Votes Confirmation Modal ────────────────────────────────────── -->
+  <div class="modal-backdrop hidden" id="clear-modal">
+    <div class="modal" style="max-width:400px;" role="dialog" aria-modal="true">
+      <div class="modal-header"><h2>Clear All Votes</h2></div>
+      <div class="modal-body">
+        <p>This will permanently delete all proxy votes for this filing. This cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-clear-cancel">Cancel</button>
+        <button class="btn btn-danger"    id="btn-clear-confirm">Clear All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Delete Vote Modal ──────────────────────────────────────────────────── -->
+  <div class="modal-backdrop hidden" id="delete-vote-modal">
+    <div class="modal" style="max-width:400px;" role="dialog" aria-modal="true">
+      <div class="modal-header"><h2>Delete Vote</h2></div>
+      <div class="modal-body">
+        <p>Are you sure you want to delete this proxy vote record?</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-delete-vote-cancel">Cancel</button>
+        <button class="btn btn-danger"    id="btn-delete-vote-confirm">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Submit Filing Confirmation Modal ─────────────────────────────────────── -->
+  <div class="modal-backdrop hidden" id="submit-modal">
+    <div class="modal" style="max-width:440px;" role="dialog" aria-modal="true">
+      <div class="modal-header"><h2>Submit Filing</h2></div>
+      <div class="modal-body">
+        <p>Are you sure you want to submit this filing? It will be marked as <strong>complete</strong> and you will not be able to edit it without returning it to draft status.</p>
+        <div id="submit-modal-error" class="alert alert-error hidden" style="margin-top:.75rem;"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btn-submit-cancel">Cancel</button>
+        <button class="btn btn-primary"   id="btn-submit-confirm">Submit Filing</button>
       </div>
     </div>
   </div>

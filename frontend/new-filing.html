@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offaways — New Filing</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container inner">
+      <span class="brand"><img src="/img/logo.svg" height="22" alt="" />Offaways</span>
+      <div class="navbar-actions">
+        <a href="/index.html">Filings</a>
+        <a href="/admin.html">Settings</a>
+        <a href="#" id="nav-logout">Logout</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page -->
+  <div class="container page">
+    <div class="page-header">
+      <h1>New Filing</h1>
+      <a href="/index.html" class="btn btn-secondary btn-sm">← Back</a>
+    </div>
+    <p style="color:var(--color-muted);margin-bottom:1.5rem;">Select the form type you want to file.</p>
+
+    <div class="form-type-grid">
+
+      <button class="form-type-card" data-href="/filing.html">
+        <div class="form-type-tag">SEC</div>
+        <div class="form-type-name">Form N-PX</div>
+        <div class="form-type-desc">Annual report of proxy voting record filed by mutual funds and institutional investment managers.</div>
+      </button>
+
+      <!-- Future form types go here -->
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/amazon-cognito-identity-js/dist/amazon-cognito-identity.min.js"></script>
+  <script src="/js/config.js"></script>
+  <script src="/js/api.js"></script>
+  <script src="/js/auth.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      await Auth.init();
+      if (!Auth.requireAuth()) return;
+      document.getElementById('nav-logout').addEventListener('click', Auth.logout);
+
+      document.querySelectorAll('.form-type-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          window.location.href = card.dataset.href;
+        });
+      });
+    });
+  </script>
+</body>
+</html>

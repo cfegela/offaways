@@ -295,6 +295,163 @@ tbody tr:hover { background: var(--color-bg); }
 .tab-btn.active  { color: var(--color-brand); border-bottom-color: var(--color-brand); }
 .tab-btn:hover:not(.active) { color: var(--color-text); }
 
+/* ── Tab panels (kept for backwards compat) ────────────────────────────────── */
+.tab-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+.tab-panel.hidden { display: none !important; }
+
+/* ── Steps trail ───────────────────────────────────────────────────────────── */
+.steps-trail {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+  padding-bottom: .25rem;
+}
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .35rem;
+  flex-shrink: 0;
+  cursor: default;
+}
+.step.completed { cursor: pointer; }
+.step-circle {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 2px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: .8rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s, border-color .15s, color .15s;
+}
+.step-label {
+  font-size: .75rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  white-space: nowrap;
+  transition: color .15s;
+}
+.step.active .step-circle {
+  background: var(--color-brand);
+  border-color: var(--color-brand);
+  color: #fff;
+}
+.step.active .step-label { color: var(--color-brand); font-weight: 600; }
+.step.completed .step-circle {
+  background: var(--color-success-light);
+  border-color: var(--color-success);
+  color: var(--color-success);
+}
+.step.completed .step-circle::before { content: '✓'; }
+.step.completed .step-circle { font-size: 0; }
+.step.completed .step-circle::before { font-size: .85rem; }
+.step.completed .step-label { color: var(--color-success); }
+.step-connector {
+  flex: 1;
+  height: 2px;
+  background: var(--color-border);
+  min-width: 2rem;
+  margin: 0 .25rem;
+  margin-bottom: 1.1rem; /* align with circle center */
+}
+
+/* ── Step panels ───────────────────────────────────────────────────────────── */
+.step-panel { display: flex; flex-direction: column; gap: 1.5rem; }
+.step-panel.hidden { display: none !important; }
+
+/* ── Step navigation bar ───────────────────────────────────────────────────── */
+.step-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  margin-top: .5rem;
+}
+
+/* ── Form sections ─────────────────────────────────────────────────────────── */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.form-section:last-child { border-bottom: none; padding-bottom: 0; }
+.section-title { font-size: 1rem; font-weight: 600; color: var(--color-brand); }
+.section-actions { display: flex; justify-content: flex-end; }
+
+/* ── Status badges ─────────────────────────────────────────────────────────── */
+.badge-draft    { background: #fef3c7; color: #92400e; }
+.badge-complete { background: var(--color-success-light); color: var(--color-success); }
+
+/* ── Pagination ────────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 1rem 0 .5rem;
+}
+.pagination-info { font-size: .875rem; color: var(--color-muted); }
+
+/* ── Vote record rows ──────────────────────────────────────────────────────── */
+.vote-record-row + .vote-record-row { margin-top: .5rem; }
+
+/* ── Form type picker ──────────────────────────────────────────────────────── */
+.form-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.form-type-card {
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem 1.25rem;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+}
+.form-type-card:hover {
+  border-color: var(--color-brand);
+  box-shadow: var(--shadow-md);
+}
+.form-type-tag {
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--color-brand);
+  background: var(--color-brand-light);
+  border-radius: 4px;
+  padding: .1rem .4rem;
+  align-self: flex-start;
+}
+.form-type-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+.form-type-desc {
+  font-size: .825rem;
+  color: var(--color-muted);
+  line-height: 1.4;
+}
+
+/* ── Disabled form state ───────────────────────────────────────────────────── */
+.form-control:disabled { background: var(--color-bg); color: var(--color-muted); cursor: not-allowed; }
+
 /* ── Responsive ────────────────────────────────────────────────────────────── */
 @media (max-width: 600px) {
   .form-row { grid-template-columns: 1fr; }

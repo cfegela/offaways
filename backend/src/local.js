@@ -6,13 +6,15 @@ const express = require('express');
 const cors    = require('cors');
 const jwt     = require('jsonwebtoken');
 
-const filingsHandler = require('./handlers/filings');
-const usersHandler       = require('./handlers/users');
-const authHandler        = require('./handlers/auth');
-const { getPool }        = require('./db/client');
+const filingsHandler    = require('./handlers/filings');
+const seriesHandler     = require('./handlers/series');
+const votesHandler      = require('./handlers/proxy-votes');
+const usersHandler      = require('./handlers/users');
+const authHandler       = require('./handlers/auth');
+const { getPool }       = require('./db/client');
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cors({
   origin:      process.env.CORS_ORIGIN || 'http://localhost:8080',
   credentials: true,
@@ -22,12 +24,12 @@ app.use(cors({
 
 function createEvent(req, extraParams = {}) {
   return {
-    httpMethod:          req.method,
-    path:                req.path,
-    pathParameters:      { ...req.params, ...extraParams },
+    httpMethod:            req.method,
+    path:                  req.path,
+    pathParameters:        { ...req.params, ...extraParams },
     queryStringParameters: req.query || {},
-    headers:             req.headers,
-    body:                req.body ? JSON.stringify(req.body) : null,
+    headers:               req.headers,
+    body:                  req.body ? JSON.stringify(req.body) : null,
     requestContext: {
       authorizer: {
         claims: req.claims || {},
@@ -72,37 +74,78 @@ app.post('/auth/login', async (req, res) => {
   sendResponse(res, await authHandler.login(createEvent(req)));
 });
 
-// Filings
-app.get('/filings',     localAuth, async (req, res) => {
+// ── Filings ───────────────────────────────────────────────────────────────────
+
+app.get('/filings',              localAuth, async (req, res) => {
   sendResponse(res, await filingsHandler.list(createEvent(req)));
 });
-app.post('/filings',    localAuth, async (req, res) => {
+app.post('/filings',             localAuth, async (req, res) => {
   sendResponse(res, await filingsHandler.create(createEvent(req)));
 });
-app.get('/filings/:id', localAuth, async (req, res) => {
+app.get('/filings/:id',          localAuth, async (req, res) => {
   sendResponse(res, await filingsHandler.get(createEvent(req)));
 });
-app.put('/filings/:id', localAuth, async (req, res) => {
+app.put('/filings/:id',          localAuth, async (req, res) => {
   sendResponse(res, await filingsHandler.update(createEvent(req)));
 });
-app.delete('/filings/:id', localAuth, async (req, res) => {
+app.delete('/filings/:id',       localAuth, async (req, res) => {
   sendResponse(res, await filingsHandler.remove(createEvent(req)));
 });
+app.put('/filings/:id/status',   localAuth, async (req, res) => {
+  sendResponse(res, await filingsHandler.setStatus(createEvent(req)));
+});
 
-// Admin — users
-app.post('/admin/users',            localAuth, async (req, res) => {
+// ── Series (nested under filing) ──────────────────────────────────────────────
+
+app.get('/filings/:filingId/series',         localAuth, async (req, res) => {
+  sendResponse(res, await seriesHandler.list(createEvent(req)));
+});
+app.post('/filings/:filingId/series',        localAuth, async (req, res) => {
+  sendResponse(res, await seriesHandler.create(createEvent(req)));
+});
+app.put('/filings/:filingId/series/:id',     localAuth, async (req, res) => {
+  sendResponse(res, await seriesHandler.update(createEvent(req)));
+});
+app.delete('/filings/:filingId/series/:id',  localAuth, async (req, res) => {
+  sendResponse(res, await seriesHandler.remove(createEvent(req)));
+});
+
+// ── Proxy Votes (nested under filing) ────────────────────────────────────────
+
+app.get('/filings/:filingId/votes',          localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.list(createEvent(req)));
+});
+app.post('/filings/:filingId/votes',         localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.create(createEvent(req)));
+});
+app.put('/filings/:filingId/votes/:id',      localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.update(createEvent(req)));
+});
+app.delete('/filings/:filingId/votes/:id',   localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.remove(createEvent(req)));
+});
+app.post('/filings/:filingId/votes/import',  localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.importCSV(createEvent(req)));
+});
+app.delete('/filings/:filingId/votes',       localAuth, async (req, res) => {
+  sendResponse(res, await votesHandler.clearAll(createEvent(req)));
+});
+
+// ── Admin — users ─────────────────────────────────────────────────────────────
+
+app.post('/admin/users',        localAuth, async (req, res) => {
   sendResponse(res, await usersHandler.create(createEvent(req)));
 });
-app.get('/admin/users',             localAuth, async (req, res) => {
+app.get('/admin/users',         localAuth, async (req, res) => {
   sendResponse(res, await usersHandler.list(createEvent(req)));
 });
-app.get('/admin/users/:id',         localAuth, async (req, res) => {
+app.get('/admin/users/:id',     localAuth, async (req, res) => {
   sendResponse(res, await usersHandler.getOne(createEvent(req)));
 });
-app.put('/admin/users/:id',         localAuth, async (req, res) => {
+app.put('/admin/users/:id',     localAuth, async (req, res) => {
   sendResponse(res, await usersHandler.update(createEvent(req)));
 });
-app.delete('/admin/users/:id',      localAuth, async (req, res) => {
+app.delete('/admin/users/:id',  localAuth, async (req, res) => {
   sendResponse(res, await usersHandler.remove(createEvent(req)));
 });
 
@@ -111,7 +154,6 @@ app.delete('/admin/users/:id',      localAuth, async (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 async function start() {
-  // Verify DB connectivity on startup
   try {
     await getPool().query('SELECT 1');
     console.log('✓ Database connected');

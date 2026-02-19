@@ -37,8 +37,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Render table ──────────────────────────────────────────────────────────
 
-  function fmt(n) {
-    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
+  function statusBadge(status) {
+    const cls = status === 'complete' ? 'badge-complete' : 'badge-draft';
+    return `<span class="badge ${cls}">${esc(status)}</span>`;
   }
 
   function render() {
@@ -49,31 +50,21 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     emptyState.classList.add('hidden');
 
-    filings.forEach((s) => {
+    filings.forEach((f) => {
       const tr = document.createElement('tr');
-      const ownerCol = Auth.isAdmin()
-        ? `<td>${s.user_email || '—'}</td>`
-        : '';
 
       tr.innerHTML = `
-        ${ownerCol}
-        <td>${esc(s.first_name)} ${esc(s.last_name)}</td>
-        <td>${esc(s.street_address)}, ${esc(s.city)}, ${esc(s.state)} ${esc(s.zip_code)}</td>
-        <td>${esc(s.country)}</td>
-        <td>${fmt(s.annual_salary)}</td>
-        <td>${new Date(s.created_at).toLocaleDateString()}</td>
+        <td style="font-family:monospace;font-size:.8rem;">${esc(f.id.slice(0, 8))}</td>
+        <td>${esc(f.report_type || 'N-PX')}</td>
+        <td>${statusBadge(f.status)}</td>
+        <td>${new Date(f.created_at).toLocaleDateString()}</td>
         <td class="actions-cell">
-          <button class="btn btn-sm btn-secondary" data-edit="${s.id}">Edit</button>
-          <button class="btn btn-sm btn-danger"    data-delete="${s.id}">Delete</button>
+          <button class="btn btn-sm btn-secondary" data-edit="${f.id}">Edit</button>
+          <button class="btn btn-sm btn-danger"    data-delete="${f.id}">Delete</button>
         </td>`;
       tbody.appendChild(tr);
     });
 
-    // Admin owner header
-    const ownerHeader = document.getElementById('col-owner');
-    if (Auth.isAdmin()) {
-      ownerHeader.classList.remove('hidden');
-    }
   }
 
   function esc(s) {
@@ -93,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── New filing ────────────────────────────────────────────────────────────
 
   document.getElementById('btn-new').addEventListener('click', () => {
-    window.location.href = '/filing.html';
+    window.location.href = '/new-filing.html';
   });
 
   // ── Delete modal ──────────────────────────────────────────────────────────

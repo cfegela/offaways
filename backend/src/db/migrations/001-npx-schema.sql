@@ -1,38 +1,25 @@
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- Migration 001: Replace sample filings table with N-PX tables
+-- Run via: node backend/scripts/migrate-npx.js
 
--- Users table
--- cognito_sub is null in local dev (we use our own UUID as sub)
--- password_hash is only used in local dev; null in production
-CREATE TABLE IF NOT EXISTS users (
-    id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    cognito_sub     VARCHAR(255) UNIQUE,
-    email           VARCHAR(255) UNIQUE NOT NULL,
-    password_hash   VARCHAR(255),
-    first_name      VARCHAR(255),
-    last_name       VARCHAR(255),
-    role            VARCHAR(50) NOT NULL DEFAULT 'user',
-    is_active       BOOLEAN NOT NULL DEFAULT true,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
+BEGIN;
+
+-- Drop old filings table (and any dependent objects)
+DROP TABLE IF EXISTS filings CASCADE;
 
 -- N-PX Filing cover page + signature
 CREATE TABLE IF NOT EXISTS npx_filings (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id             UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status              VARCHAR(20) NOT NULL DEFAULT 'draft',  -- draft | complete
-    filer_type          VARCHAR(10) NOT NULL DEFAULT 'RMIC',   -- RMIC | IM
+    status              VARCHAR(20) NOT NULL DEFAULT 'draft',
+    filer_type          VARCHAR(10) NOT NULL DEFAULT 'RMIC',
 
-    -- Report info
-    report_type         VARCHAR(10) NOT NULL DEFAULT 'NPX',    -- NPX | NPX-A
+    report_type         VARCHAR(10) NOT NULL DEFAULT 'NPX',
     period_start        DATE,
     period_end          DATE,
 
-    -- Amendment (NPX-A only)
     amendment_number    INTEGER,
     amendment_type      VARCHAR(50),
 
-    -- Filer identity
     filer_name          VARCHAR(500),
     filer_cik           VARCHAR(50),
     filer_lei           VARCHAR(50),
@@ -45,7 +32,6 @@ CREATE TABLE IF NOT EXISTS npx_filings (
     filer_country       VARCHAR(100) DEFAULT 'US',
     filer_phone         VARCHAR(50),
 
-    -- Agent for service
     agent_name          VARCHAR(500),
     agent_street1       VARCHAR(500),
     agent_street2       VARCHAR(500),
@@ -55,7 +41,6 @@ CREATE TABLE IF NOT EXISTS npx_filings (
     agent_country       VARCHAR(100) DEFAULT 'US',
     agent_phone         VARCHAR(50),
 
-    -- Signature
     signatory_name      VARCHAR(255),
     signatory_title     VARCHAR(255),
     signature_date      DATE,
@@ -64,7 +49,6 @@ CREATE TABLE IF NOT EXISTS npx_filings (
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Fund series (RMIC filers only)
 CREATE TABLE IF NOT EXISTS npx_filing_series (
     id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     filing_id   UUID NOT NULL REFERENCES npx_filings(id) ON DELETE CASCADE,
@@ -76,28 +60,23 @@ CREATE TABLE IF NOT EXISTS npx_filing_series (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Proxy votes — one per issuer+meeting+proposal
 CREATE TABLE IF NOT EXISTS npx_proxy_votes (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     filing_id       UUID NOT NULL REFERENCES npx_filings(id) ON DELETE CASCADE,
     series_id       UUID REFERENCES npx_filing_series(id) ON DELETE SET NULL,
 
-    -- Issuer / security
     issuer_name     VARCHAR(500),
     cusip           VARCHAR(20),
     isin            VARCHAR(25),
     figi            VARCHAR(25),
 
-    -- Meeting
     meeting_date    DATE,
-    meeting_type    VARCHAR(50),  -- Annual | Special | Other
+    meeting_type    VARCHAR(50),
 
-    -- Proposal
     vote_description    TEXT,
     vote_source         VARCHAR(100),
     vote_category       VARCHAR(100),
 
-    -- Shares
     shares_voted        NUMERIC(20, 4),
     shares_on_loan      NUMERIC(20, 4),
 
@@ -106,19 +85,16 @@ CREATE TABLE IF NOT EXISTS npx_proxy_votes (
     updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Vote records — how shares were voted (multiple per proxy vote)
 CREATE TABLE IF NOT EXISTS npx_vote_records (
     id                  UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     proxy_vote_id       UUID NOT NULL REFERENCES npx_proxy_votes(id) ON DELETE CASCADE,
-    how_voted           VARCHAR(50),  -- for | against | abstain | withhold | not_voted
-    mgmt_recommendation VARCHAR(50),  -- for | against | abstain | withhold | none
+    how_voted           VARCHAR(50),
+    mgmt_recommendation VARCHAR(50),
     shares              NUMERIC(20, 4),
     sort_order          INTEGER NOT NULL DEFAULT 0,
     created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-
--- ── Indexes ────────────────────────────────────────────────────────────────────
 
 CREATE INDEX IF NOT EXISTS idx_npx_filings_user_id       ON npx_filings(user_id);
 CREATE INDEX IF NOT EXISTS idx_npx_filings_status        ON npx_filings(status);
@@ -126,21 +102,6 @@ CREATE INDEX IF NOT EXISTS idx_npx_filing_series_filing  ON npx_filing_series(fi
 CREATE INDEX IF NOT EXISTS idx_npx_proxy_votes_filing    ON npx_proxy_votes(filing_id);
 CREATE INDEX IF NOT EXISTS idx_npx_proxy_votes_series    ON npx_proxy_votes(series_id);
 CREATE INDEX IF NOT EXISTS idx_npx_vote_records_vote     ON npx_vote_records(proxy_vote_id);
-
--- ── Auto-update updated_at ─────────────────────────────────────────────────────
-
-CREATE OR REPLACE FUNCTION update_updated_at()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_users_updated_at ON users;
-CREATE TRIGGER trg_users_updated_at
-    BEFORE UPDATE ON users
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
 DROP TRIGGER IF EXISTS trg_npx_filings_updated_at ON npx_filings;
 CREATE TRIGGER trg_npx_filings_updated_at
@@ -161,3 +122,5 @@ DROP TRIGGER IF EXISTS trg_npx_vote_records_updated_at ON npx_vote_records;
 CREATE TRIGGER trg_npx_vote_records_updated_at
     BEFORE UPDATE ON npx_vote_records
     FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+COMMIT;

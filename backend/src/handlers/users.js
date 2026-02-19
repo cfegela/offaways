@@ -62,7 +62,7 @@ exports.list = async (event) => {
 
     const result = await query(
       `SELECT id, email, first_name, last_name, role, is_active, created_at, updated_at,
-              (SELECT COUNT(*) FROM filings s WHERE s.user_id = users.id) AS filing_count
+              (SELECT COUNT(*) FROM npx_filings s WHERE s.user_id = users.id) AS filing_count
        FROM users
        ORDER BY created_at DESC`,
     );

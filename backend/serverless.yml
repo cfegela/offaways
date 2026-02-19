@@ -117,6 +117,129 @@ functions:
             type: COGNITO_USER_POOLS
             authorizerId: !Ref ApiGatewayAuthorizer
 
+  setFilingStatus:
+    handler: src/handlers/filings.setStatus
+    events:
+      - http:
+          path: /filings/{id}/status
+          method: put
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  # Series
+  listSeries:
+    handler: src/handlers/series.list
+    events:
+      - http:
+          path: /filings/{filingId}/series
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  createSeries:
+    handler: src/handlers/series.create
+    events:
+      - http:
+          path: /filings/{filingId}/series
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  updateSeries:
+    handler: src/handlers/series.update
+    events:
+      - http:
+          path: /filings/{filingId}/series/{id}
+          method: put
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  deleteSeries:
+    handler: src/handlers/series.remove
+    events:
+      - http:
+          path: /filings/{filingId}/series/{id}
+          method: delete
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  # Proxy Votes
+  listVotes:
+    handler: src/handlers/proxy-votes.list
+    events:
+      - http:
+          path: /filings/{filingId}/votes
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  createVote:
+    handler: src/handlers/proxy-votes.create
+    events:
+      - http:
+          path: /filings/{filingId}/votes
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  updateVote:
+    handler: src/handlers/proxy-votes.update
+    events:
+      - http:
+          path: /filings/{filingId}/votes/{id}
+          method: put
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  deleteVote:
+    handler: src/handlers/proxy-votes.remove
+    events:
+      - http:
+          path: /filings/{filingId}/votes/{id}
+          method: delete
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  importVotes:
+    handler: src/handlers/proxy-votes.importCSV
+    events:
+      - http:
+          path: /filings/{filingId}/votes/import
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
+  clearVotes:
+    handler: src/handlers/proxy-votes.clearAll
+    events:
+      - http:
+          path: /filings/{filingId}/votes
+          method: delete
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: !Ref ApiGatewayAuthorizer
+
   # Admin — Users
   adminCreateUser:
     handler: src/handlers/users.create
