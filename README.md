@@ -70,16 +70,30 @@ offaways/
 │       │   ├── filings.js          # N-PX filing CRUD + status transitions
 │       │   ├── series.js           # Fund series CRUD (RMIC filers)
 │       │   ├── proxy-votes.js      # Proxy vote CRUD + CSV import
-│       │   └── users.js            # Admin user management
+│       │   ├── users.js            # Admin user management
+│       │   └── setup.js            # Database schema initializer (Lambda)
 │       ├── db/
 │       │   ├── client.js           # PostgreSQL pool
 │       │   ├── schema.sql          # Full database schema
 │       │   └── migrations/
 │       │       └── 001-npx-schema.sql  # Migration from legacy schema
-│       └── utils/
-│           ├── auth.js             # JWT & Cognito user resolution
-│           ├── csv-parser.js       # CSV parser for proxy vote imports
-│           └── response.js         # Lambda response helpers
+│       ├── utils/
+│       │   ├── auth.js             # JWT & Cognito user resolution
+│       │   ├── csv-parser.js       # CSV parser for proxy vote imports
+│       │   ├── filing-helpers.js   # Filing ownership verification
+│       │   └── response.js         # Lambda response helpers
+│       └── __tests__/
+│           ├── setup.js            # Jest configuration
+│           ├── helpers.js          # Test utilities
+│           ├── handlers/
+│           │   ├── filings.test.js
+│           │   ├── series.test.js
+│           │   ├── proxy-votes.test.js
+│           │   └── users.test.js
+│           └── utils/
+│               ├── auth.test.js
+│               ├── csv-parser.test.js
+│               └── response.test.js
 └── frontend/
     ├── login.html
     ├── index.html                  # Filings list
@@ -92,6 +106,7 @@ offaways/
         ├── config.js               # Auto-detects local vs prod
         ├── auth.js                 # Local JWT or Cognito SDK
         ├── api.js                  # Fetch wrapper
+        ├── utils.js                # HTML escaping utility
         ├── login.js
         ├── app.js                  # Filings list logic
         ├── filing.js               # N-PX filing form logic
